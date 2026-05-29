@@ -167,6 +167,7 @@ export default defineConfig({
           items: [
             { text: "概述", link: "/spring-cloud/" },
             { text: "Nacos 注册 & 配置中心", link: "/spring-cloud/nacos/" },
+            { text: "Nacos 配置中心详解", link: "/spring-cloud/nacos/config" },
             { text: "RocketMQ 消息队列", link: "/spring-cloud/rocketmq/" },
             { text: "OpenFeign 远程调用", link: "/spring-cloud/openfeign/" },
             { text: "Dubbo RPC 框架", link: "/spring-cloud/dubbo/" },
