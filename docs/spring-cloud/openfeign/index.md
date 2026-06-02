@@ -7,6 +7,7 @@ OpenFeign 是一个**声明式 HTTP 客户端**。通俗地说：你只需要定
 **举个例子**，如果你想调用 GitHub 的 API 获取仓库的贡献者列表，传统方式需要写几十行代码：拼接 URL、设置请求头、发起 HTTP 连接、解析 JSON 响应……而用 OpenFeign，你只需要写一个接口：
 
 ```java path=null start=null
+@FeignClient(name = "github", url = "https://api.github.com")
 public interface GitHubClient {
 
     @GetMapping("/repos/{owner}/{repo}/contributors")
@@ -35,23 +36,23 @@ Contributor[] contributors = restTemplate.getForObject(url, Contributor[].class)
 
 OpenFeign 通过"接口 + 注解"把 HTTP 调用变成声明式，解决了以上所有问题。
 
-## Feign.builder() 与 @FeignClient 的区别
+## @FeignClient 是什么？
 
-OpenFeign 有两种使用方式，本文档主要介绍 **`Feign.builder()` + `SpringMvcContract`** 方式：
+`@FeignClient` 是 Spring Cloud OpenFeign 提供的最核心注解，你只需要在接口上加一个 `@FeignClient`，Spring 就会在启动时自动为你生成代理对象并注册到容器中，之后直接 `@Resource` 注入即可使用。
 
-| 方式 | 注解风格 | 适用场景 |
-|------|---------|------|
-| `Feign.builder()` + `SpringMvcContract` | `@GetMapping` 等 Spring MVC 注解 | 调用外部 HTTP API，与 Controller 写法一致，对 Spring 开发者最友好 |
-| `Feign.builder()` 默认（Feign 原生 Contract） | `@RequestLine` 等 Feign 注解 | 想与 Spring 框架完全解耦 |
-| `@FeignClient`（Spring Cloud） | `@GetMapping` 等 | 微服务间调用（自动启用 SpringMvcContract） |
+使用 `@FeignClient` 的好处：
+- **零配置**：不用手动 `Feign.builder()`，不用写 `@Bean` 方法
+- **自动装配**：Spring 自动创建代理对象，直接注入即可
+- **配置集中**：超时、编解码、拦截器等都可以通过 `application.yml` 统一管理
+- **与 Spring MVC 注解无缝兼容**：`@GetMapping`、`@PathVariable`、`@RequestBody` 等直接使用
 
-> 由于本项目的微服务调用已使用 Dubbo（详见 [Nacos 文档](../nacos/)），本文档聚焦于**作为 HTTP 客户端调用外部 API** 的场景，统一使用 `Feign.builder()` + `SpringMvcContract`。启用 `SpringMvcContract` 后，你就可以用熟悉的 `@GetMapping`、`@PostMapping` 等 Spring MVC 注解来定义接口了，学习成本几乎为零。
+> 由于本项目的微服务调用已使用 Dubbo（详见 [Nacos 文档](../nacos/)），本文档聚焦于**作为 HTTP 客户端调用外部 API** 的场景，通过 `@FeignClient` 的 `url` 属性指定目标地址。
 
 ---
 
 ## 一、快速开始
 
-这一节会带你从零开始，用 OpenFeign 调用 GitHub 的公开 API。
+这一节会带你从零开始，用 `@FeignClient` 调用 GitHub 的公开 API。
 
 ### 1.1 添加 Maven 依赖
 
@@ -67,18 +68,33 @@ OpenFeign 有两种使用方式，本文档主要介绍 **`Feign.builder()` + `S
 
 > **说明**：`spring-cloud-starter-openfeign` 是一个"全家桶"依赖，它已经包含了 feign-core、Jackson 编解码器、OkHttp 引擎、Slf4j 日志等所有需要的库，你只需要引入这一个依赖就够了。
 
-### 1.2 定义 HTTP 接口
+### 1.2 启用 Feign 客户端
 
-接下来的步骤是：**定义一个 Java 接口，用 Spring MVC 注解描述你要调用的 HTTP 请求**。
+在启动类上加上 `@EnableFeignClients` 注解，告诉 Spring 启动时扫描所有 `@FeignClient` 接口并自动生成代理对象：
 
-> 启用 `SpringMvcContract` 后，接口上的注解写法和你写 Controller 时完全一样——`@GetMapping`、`@PathVariable`、`@RequestBody` 等都可以直接使用。
+```java
+@SpringBootApplication
+@EnableFeignClients  // 启用 Feign 客户端扫描
+public class Application {
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args);
+    }
+}
+```
+
+### 1.3 定义 HTTP 接口
+
+接下来的步骤是：**定义一个 Java 接口，加上 `@FeignClient` 注解，用 Spring MVC 注解描述你要调用的 HTTP 请求**。
+
+> `@FeignClient` 的 `url` 属性指定目标 API 的根地址，`name` 属性是客户端的唯一标识（必填）。
 
 ```java
 // 步骤说明：
-// 1. 定义一个普通的 Java 接口（不需要实现类）
+// 1. @FeignClient 指定 name（客户端标识）和 url（目标 API 根地址）
 // 2. 用 @GetMapping/@PostMapping 声明 HTTP 方法和 URL 路径
 // 3. 用 @PathVariable 绑定路径参数，用 @RequestBody 标记请求体
 
+@FeignClient(name = "github", url = "https://api.github.com")
 public interface GitHubClient {
 
     // 示例 1：GET 请求，@PathVariable 绑定路径中的 {owner} 和 {repo}
@@ -107,51 +123,18 @@ public interface GitHubClient {
 }
 ```
 
-### 1.3 将客户端注册为 Spring Bean
-
-光有接口还不够，你需要通过 `Feign.builder()` 构建一个**代理对象**，并将它注册到 Spring 容器中。
-
-> **为什么需要注册为 Bean？** `Feign.builder().target()` 返回的是一个由 Feign 动态生成的代理对象，它本身不是 Spring Bean。只有通过 `@Bean` 方法把它注册到 Spring 容器后，其他类才能通过 `@Resource` 或构造器注入来使用它。
-
-```java
-@Configuration  // 标记这是一个配置类
-public class FeignClientConfig {
-
-    @Bean  // 将返回值注册为 Spring Bean，名字默认是方法名 "gitHubClient"
-    public GitHubClient gitHubClient(ObjectMapper objectMapper) {
-        return Feign.builder()
-                // 启动 Spring MVC 契约：让接口可以使用 @GetMapping、@RequestBody 等注解
-                .contract(new SpringMvcContract())
-                // 编码器：将 Java 对象序列化为 JSON 请求体
-                .encoder(new JacksonEncoder(objectMapper))
-                // 解码器：将 JSON 响应体反序列化为 Java 对象
-                .decoder(new JacksonDecoder(objectMapper))
-                // 超时配置：连接 10 秒，读取 60 秒
-                .options(new Request.Options(
-                        10, TimeUnit.SECONDS,
-                        60, TimeUnit.SECONDS,
-                        true))
-                // 请求拦截器：每次请求自动添加 Basic Auth 认证头
-                .requestInterceptor(new BasicAuthRequestInterceptor("username", "token"))
-                // 日志级别：BASIC 会记录请求方法、URL、状态码和耗时
-                .logLevel(Logger.Level.BASIC)
-                .logger(new Slf4jLogger(GitHubClient.class))
-                // target：指定接口类型 + 目标 URL 的根地址
-                .target(GitHubClient.class, "https://api.github.com");
-    }
-}
-```
+> **不需要实现类，不需要写 `@Bean` 方法！** Spring 会在启动时自动扫描 `@FeignClient` 接口，动态生成代理对象并注册到容器中。
 
 ### 1.4 在业务代码中使用客户端
 
-注册为 Bean 后，就可以在任意 Service 或 Controller 中通过**构造器注入**来使用了：
+Spring 自动注册后，直接在 Service 或 Controller 中通过**构造器注入**即可使用：
 
 ```java
 @Service
 @RequiredArgsConstructor  // Lombok 注解：自动生成包含所有 final 字段的构造器
 public class GitHubService {
 
-    private final GitHubClient gitHubClient;  // 构造器注入（推荐方式）
+    private final GitHubClient gitHubClient;  // 构造器注入，Spring 自动装配
 
     // 调用 GET 接口获取贡献者列表
     public List<GitHubClient.Contributor> getContributors(String owner, String repo) {
@@ -168,23 +151,15 @@ public class GitHubService {
 }
 ```
 
-> **到这里，一个完整的 HTTP 客户端就搭建好了。** 下面详细介绍每个注解的用法。
+> **到这里，一个完整的 HTTP 客户端就搭建好了。** 和 `Feign.builder()` 方式相比，`@FeignClient` 省去了手动编写配置类、手动 `@Bean` 注册的步骤，代码量大幅减少。
 
 ---
 
 ## 二、注解详解
 
-### 为什么推荐 SpringMvcContract？
+### 为什么 @FeignClient 可以直接使用 Spring MVC 注解？
 
-启用 `SpringMvcContract` 后，接口上可以使用所有你熟悉的 Spring MVC 注解——`@GetMapping`、`@PathVariable`、`@RequestBody` 等，和写 Controller 完全一致。这对 Spring 开发者来说几乎没有额外的学习成本。
-
-当然，如果你偏好与 Spring 框架完全解耦，也可以使用 Feign 原生的 `@RequestLine` 等注解（不配置 `SpringMvcContract` 即可）。
-
-| 方式 | 注解 | 适用场景 |
-|------|------|---------|
-| `Feign.builder()` + `SpringMvcContract`（推荐） | `@GetMapping` 等 | 与 Controller 写法一致，Spring 开发者首选 |
-| `Feign.builder()` 默认 | `@RequestLine` | 与 Spring 框架完全解耦 |
-| `@FeignClient`（Spring Cloud） | `@GetMapping` 等 | 微服务间调用 |
+`@FeignClient` 内部自动启用了 `SpringMvcContract`，因此接口上可以直接使用 `@GetMapping`、`@PathVariable`、`@RequestBody` 等所有你熟悉的 Spring MVC 注解，和写 Controller 完全一样，学习成本几乎为零。
 
 ### 2.1 @GetMapping / @PostMapping / @PutMapping / @DeleteMapping — HTTP 方法
 
@@ -353,96 +328,106 @@ public interface UserApi {
 
 ## 三、最佳实践
 
-### 3.1 封装统一构建工具类
+### 3.1 通过 application.yml 统一配置超时
 
-**适用场景**：当项目中有多个外部 API 客户端时，每个客户端都重复写一遍 `Feign.builder()` 会很繁琐。封装一个工具类统一管理超时、编码器等通用配置，避免重复代码。
+**适用场景**：使用 `@FeignClient` 后，不需要手动 `Feign.builder()`，所有配置都可以通过 `application.yml` 集中管理。
+
+```yaml
+spring:
+  cloud:
+    openfeign:
+      client:
+        config:
+          # 全局默认配置：对所有 @FeignClient 生效
+          default:
+            connectTimeout: 5000      # 连接超时（毫秒）
+            readTimeout: 30000        # 读取超时（毫秒）
+            loggerLevel: BASIC        # 日志级别
+          # 针对特定客户端的配置：优先级高于 default
+          github:
+            connectTimeout: 10000
+            readTimeout: 60000
+          sms-client:
+            connectTimeout: 3000
+            readTimeout: 10000
+```
+
+> 配置名 `github` 和 `sms-client` 分别对应 `@FeignClient(name = "github")` 和 `@FeignClient(name = "sms-client")` 中的 `name` 属性。
+
+### 3.2 统一认证拦截器（全局生效）
+
+**适用场景**：调用外部 API 时通常需要认证（如 Bearer Token、API Key），通过 `@Bean` 注册一个全局 `RequestInterceptor`，所有 `@FeignClient` 自动生效。
 
 ```java
-public class FeignClientHelper {
+@Configuration
+public class FeignConfig {
 
-    // 统一的超时配置：连接 5 秒，读取 30 秒
-    private static final Request.Options DEFAULT_OPTIONS =
-            new Request.Options(5, TimeUnit.SECONDS, 30, TimeUnit.SECONDS, true);
+    @Bean
+    public RequestInterceptor bearerAuthInterceptor() {
+        return template -> template.header("Authorization", "Bearer " + getToken());
+    }
 
-    public static <T> T build(Class<T> apiType, String url, RequestInterceptor... interceptors) {
-        return Feign.builder()
-                .contract(new SpringMvcContract())  // 启用 Spring MVC 注解
-                .encoder(new JacksonEncoder())
-                .decoder(new JacksonDecoder())
-                .options(DEFAULT_OPTIONS)
-                .requestInterceptors(Arrays.asList(interceptors))
-                .logLevel(Logger.Level.BASIC)
-                .logger(new Slf4jLogger(apiType))
-                .target(apiType, url);
+    private String getToken() {
+        // 从配置或缓存中获取 token
+        return "your-token";
     }
 }
 ```
 
-使用方式变得极其简洁：
+> 注册为 `@Bean` 后，所有 `@FeignClient` 发出的请求都会自动带上 `Authorization` 头，无需在每个接口上单独设置。
+
+如果只想让某个特定客户端使用拦截器，可以用 `@FeignClient` 的 `configuration` 属性：
 
 ```java
-// 一行代码构建客户端
-GitHubClient github = FeignClientHelper.build(GitHubClient.class, "https://api.github.com");
-```
+@FeignClient(name = "paypal", url = "https://api-m.paypal.com",
+             configuration = PayPalConfig.class)
+public interface PayPalClient { /* ... */ }
 
-### 3.2 统一认证拦截器
-
-**适用场景**：调用外部 API 时通常需要认证（如 Bearer Token、API Key），通过 `RequestInterceptor` 统一处理，避免在每个方法上重复设置。
-
-```java
-// Bearer Token 认证拦截器
-public class BearerAuthInterceptor implements RequestInterceptor {
-    private final String token;
-
-    public BearerAuthInterceptor(String token) { this.token = token; }
-
-    @Override
-    public void apply(RequestTemplate template) {
-        template.header("Authorization", "Bearer " + token);
+// 独立的配置类，仅 PayPalClient 使用
+public class PayPalConfig {
+    @Bean
+    public RequestInterceptor payPalAuthInterceptor() {
+        return template -> template.header("Authorization", "Bearer " + payPalToken);
     }
 }
-
-// 使用：构建时传入拦截器，所有请求自动带上认证头
-PayPalClient payPal = FeignClientHelper.build(
-    PayPalClient.class, "https://api-m.paypal.com",
-    new BearerAuthInterceptor(payPalAccessToken)
-);
 ```
 
 ### 3.3 自定义 ErrorDecoder 统一错误处理
 
-**适用场景**：外部 API 返回的 HTTP 错误状态码（如 404、429、500）需要转换为业务异常，方便上层统一处理，而不是在每个调用处写 try-catch。
+**适用场景**：外部 API 返回的 HTTP 错误状态码（如 404、429、500）需要转换为业务异常，方便上层统一处理。
 
 ```java
-public class CustomErrorDecoder implements ErrorDecoder {
+@Configuration
+public class FeignConfig {
 
-    private final ErrorDecoder defaultDecoder = new ErrorDecoder.Default();
+    @Bean
+    public ErrorDecoder customErrorDecoder() {
+        return new ErrorDecoder() {
+            private final ErrorDecoder defaultDecoder = new ErrorDecoder.Default();
 
-    @Override
-    public Exception decode(String methodKey, Response response) {
-        if (response.status() == 404) {
-            return new NotFoundException("Resource not found: " + response.request().url());
-        }
-        if (response.status() == 429) {
-            return new RateLimitException("Rate limited");
-        }
-        if (response.status() >= 400 && response.status() < 500) {
-            return new BusinessException("Client error: " + response.status());
-        }
-        return defaultDecoder.decode(methodKey, response);
+            @Override
+            public Exception decode(String methodKey, Response response) {
+                if (response.status() == 404) {
+                    return new NotFoundException("Resource not found");
+                }
+                if (response.status() == 429) {
+                    return new RateLimitException("Rate limited");
+                }
+                if (response.status() >= 400 && response.status() < 500) {
+                    return new BusinessException("Client error: " + response.status());
+                }
+                return defaultDecoder.decode(methodKey, response);
+            }
+        };
     }
 }
-
-// 配置 ErrorDecoder
-Feign.builder()
-    .contract(new SpringMvcContract())
-    .errorDecoder(new CustomErrorDecoder())
-    .target(MyApi.class, "https://api.example.com");
 ```
+
+> 注册为 `@Bean` 后，所有 `@FeignClient` 都会使用这个 ErrorDecoder。
 
 ### 3.4 日志级别控制
 
-**适用场景**：开发阶段需要看到完整的请求/响应内容来排查问题，生产环境则只需记录请求 URL 和耗时。通过日志级别灵活切换。
+**适用场景**：开发阶段需要看到完整的请求/响应内容来排查问题，生产环境则只需记录请求 URL 和耗时。
 
 | 级别 | 说明 | 推荐场景 |
 |------|------|---------|
@@ -451,20 +436,29 @@ Feign.builder()
 | `HEADERS` | BASIC + 请求/响应头 | 开发环境 |
 | `FULL` | HEADERS + 请求/响应体 | 调试排查 |
 
+两步配置：
+
+**① 在 `application.yml` 中设置 Feign 日志级别：**
+
 ```yaml
-# application.yml —— 必须配置日志级别，否则 Feign 日志不会输出
-logging:
-  level:
-    com.example.feign.GitHubClient: DEBUG  # 设为 DEBUG 才会输出 Feign 日志
+spring:
+  cloud:
+    openfeign:
+      client:
+        config:
+          default:
+            loggerLevel: BASIC  # 或 FULL / HEADERS / NONE
 ```
 
-```java
-// 根据运行环境动态切换日志级别
-Feign.builder()
-    .contract(new SpringMvcContract())
-    .logLevel(isProd ? Logger.Level.BASIC : Logger.Level.FULL)
-    .target(MyApi.class, url);
+**② 在 `application.yml` 中设置接口包的日志级别为 DEBUG：**
+
+```yaml
+logging:
+  level:
+    com.example.feign: DEBUG  # 设为 DEBUG 才会输出 Feign 日志
 ```
+
+> 两个配置缺一不可：`loggerLevel` 决定记录什么内容，`logging.level` 决定是否输出。
 
 ### 3.5 异常处理
 
@@ -499,34 +493,43 @@ public class GitHubService {
 
 ### 3.6 多客户端统一管理
 
-**适用场景**：项目需要调用多个不同的外部 API（如 GitHub + 短信服务），在一个配置类中集中管理所有客户端，结构清晰，便于维护。
+**适用场景**：项目需要调用多个不同的外部 API（如 GitHub + 短信服务），每个 API 只需定义一个 `@FeignClient` 接口，通过 `application.yml` 统一管理各自的配置即可。
 
 ```java
-@Configuration
-public class ExternalApiConfig {
+// 客户端 1：GitHub
+@FeignClient(name = "github", url = "https://api.github.com")
+public interface GitHubClient {
 
-    @Bean
-    public GitHubClient gitHubClient(ObjectMapper mapper) {
-        return Feign.builder()
-                .contract(new SpringMvcContract())
-                .encoder(new JacksonEncoder(mapper))
-                .decoder(new JacksonDecoder(mapper))
-                .options(new Request.Options(5, TimeUnit.SECONDS, 30, TimeUnit.SECONDS, true))
-                .logLevel(Logger.Level.BASIC)
-                .logger(new Slf4jLogger(GitHubClient.class))
-                .target(GitHubClient.class, "https://api.github.com");
-    }
+    @GetMapping("/repos/{owner}/{repo}/contributors")
+    List<Contributor> contributors(@PathVariable("owner") String owner,
+                                   @PathVariable("repo") String repo);
+}
 
-    @Bean
-    public SmsClient smsClient(ObjectMapper mapper,
-                                @Value("${sms.api-key}") String apiKey) {
-        return Feign.builder()
-                .contract(new SpringMvcContract())
-                .encoder(new JacksonEncoder(mapper))
-                .decoder(new JacksonDecoder(mapper))
-                .options(new Request.Options(3, TimeUnit.SECONDS, 10, TimeUnit.SECONDS, true))
-                .requestInterceptor(tpl -> tpl.header("X-API-Key", apiKey))
-                .target(SmsClient.class, "https://sms-api.example.com");
-    }
+// 客户端 2：短信服务
+@FeignClient(name = "sms-client", url = "https://sms-api.example.com")
+public interface SmsClient {
+
+    @PostMapping("/sms/send")
+    SmsResult send(@RequestBody SmsRequest request);
 }
 ```
+
+对应的 `application.yml` 配置：
+
+```yaml
+spring:
+  cloud:
+    openfeign:
+      client:
+        config:
+          github:
+            connectTimeout: 5000
+            readTimeout: 30000
+            loggerLevel: BASIC
+          sms-client:
+            connectTimeout: 3000
+            readTimeout: 10000
+            loggerLevel: FULL
+```
+
+> 使用 `@FeignClient` 后，每个外部 API 就是一个接口文件 + 对应的 yml 配置，结构清晰，无需手动编写配置类。
