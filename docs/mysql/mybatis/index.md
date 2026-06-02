@@ -15,6 +15,8 @@ MyBatis 是一款优秀的**半自动 ORM 框架**。与全自动框架（如 Hi
 
 MyBatis-Plus 是 MyBatis 的增强工具，在 MyBatis 基础上提供了通用 CRUD、分页、条件构造器等功能。你可以同时使用两者——用 MyBatis-Plus 的 `BaseMapper` 处理简单 CRUD，用 MyBatis XML Mapper 处理复杂 SQL。
 
+> 注解速查：[MyBatis 注解说明](../mybatis-annotations) | [MyBatis-Plus 注解说明](../mybatis-plus-annotations)
+
 ---
 
 ## 一、Maven 依赖

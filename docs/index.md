@@ -36,7 +36,7 @@ features:
 | 分类 | 技术 | 说明 |
 |------|------|------|
 | **架构** | [COLA](./cola/) | 整洁面向对象分层架构，DDD 落地实践 |
-| **数据库** | [MySQL](./mysql/) | DDL/DML/DQL 全面指南 + MyBatis-Plus 集成 |
+| **数据库** | [MySQL](./mysql/) | DDL/DML/DQL + MyBatis/MyBatis-Plus 注解速查与集成实战 |
 | **缓存** | [Redis](./redis/) | String/Hash/List/Set/ZSet 全面指南 + Redisson 分布式锁 |
 | **搜索** | [Elasticsearch](./es/) | 数据类型、Mapping、索引 CRUD、文档 CRUD、Spring Boot 集成 |
 | **容器** | [Docker](./docker/) | 镜像管理、容器操作、Dockerfile、Compose、部署实战 |
@@ -44,7 +44,6 @@ features:
 | **微服务** | [RocketMQ](./spring-cloud/rocketmq/) | 同步/异步/顺序/延迟/事务消息 |
 | **微服务** | [Dubbo](./spring-cloud/dubbo/) | 高性能 RPC，负载均衡 + 集群容错 |
 | **微服务** | [OpenFeign](./spring-cloud/openfeign/) | 声明式 HTTP 调用，熔断降级 |
-| **ORM** | [MyBatis-Plus](./spring-cloud/mybatis-plus/) | Lambda 条件构造器，通用 CRUD，无 XML |
 
 ---
 

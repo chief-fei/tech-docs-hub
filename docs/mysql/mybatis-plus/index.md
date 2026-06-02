@@ -3,6 +3,8 @@
 MyBatis-Plus 是 MyBatis 增强工具，提供通用 CRUD、分页、条件构造器等功能。
 
 > 搭配 [MyBatis 文档](../mybatis/) 使用效果更佳：MyBatis-Plus 的 `BaseMapper` 处理简单 CRUD，复杂的自定义 SQL 通过 XML Mapper 实现。
+>
+> MyBatis-Plus 注解速查：[注解与参数说明](../mybatis-plus-annotations)
 
 ## 一、Maven 依赖
 

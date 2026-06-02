@@ -9,8 +9,8 @@ Spring Cloud 是构建微服务分布式系统的常用工具集。
 | **Nacos** | [nacos/](./nacos/) | 服务注册发现（含 Dubbo 集成） + 配置中心 |
 | **RocketMQ** | [rocketmq/](./rocketmq/) | 分布式消息中间件 |
 | **OpenFeign** | [openfeign/](./openfeign/) | 声明式 HTTP 客户端（外部 API 调用） |
-| **MyBatis** | [mybatis/](./mybatis/) | 半自动 ORM，XML Mapper 方式管理 SQL |
-| **MyBatis-Plus** | [mybatis-plus/](./mybatis-plus/) | MyBatis 增强工具，通用 CRUD + 条件构造器 |
+
+> **MySQL / MyBatis / MyBatis-Plus** 已归类到 [数据库与缓存](/mysql/) 栏目下。
 
 ## 微服务架构关系
 
@@ -25,10 +25,10 @@ Spring Cloud 是构建微服务分布式系统的常用工具集。
    └────┬─────┘   └──────────┘   └──────────┘
         │ Dubbo / OpenFeign 远程调用
         ▼
-   ┌──────────┐   ┌──────────────┐
-   │ RocketMQ │   │ MyBatis-Plus │
-   │ 消息队列  │   │  数据库 ORM   │
-   └──────────┘   └──────────────┘
+   ┌──────────┐
+   │ RocketMQ │
+   │ 消息队列  │
+   └──────────┘
 ```
 
 ## 版本对应
