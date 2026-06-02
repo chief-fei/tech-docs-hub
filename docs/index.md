@@ -36,6 +36,7 @@ features:
 | 分类 | 技术 | 说明 |
 |------|------|------|
 | **架构** | [COLA](./cola/) | 整洁面向对象分层架构，DDD 落地实践 |
+| **数据库** | [MySQL](./mysql/) | DDL/DML/DQL 全面指南 + MyBatis-Plus 集成 |
 | **缓存** | [Redis](./redis/) | String/Hash/List/Set/ZSet 全面指南 + Redisson 分布式锁 |
 | **搜索** | [Elasticsearch](./es/) | 数据类型、Mapping、索引 CRUD、文档 CRUD、Spring Boot 集成 |
 | **容器** | [Docker](./docker/) | 镜像管理、容器操作、Dockerfile、Compose、部署实战 |
@@ -48,7 +49,7 @@ features:
 ---
 
 ::: tip 快速导航
-`/cola/` COLA · `/redis/` Redis · `/docker/` Docker · `/es/` ES · `/spring-cloud/` 微服务
+`/cola/` COLA · `/mysql/` MySQL · `/redis/` Redis · `/docker/` Docker · `/es/` ES · `/spring-cloud/` 微服务
 :::
 
 ---

@@ -63,6 +63,7 @@ export default defineConfig({
       {
         text: "数据库与缓存",
         items: [
+          { text: "MySQL", link: "/mysql/" },
           { text: "Redis", link: "/redis/" },
           { text: "Elasticsearch", link: "/es/" },
         ],
@@ -170,6 +171,18 @@ export default defineConfig({
             { text: "OpenFeign 远程调用", link: "/spring-cloud/openfeign/" },
             { text: "MyBatis XML 详解", link: "/spring-cloud/mybatis/" },
             { text: "MyBatis-Plus ORM", link: "/spring-cloud/mybatis-plus/" },
+          ],
+        },
+      ],
+      "/mysql/": [
+        {
+          text: "MySQL", collapsed: false,
+          items: [
+            { text: "概述", link: "/mysql/" },
+            { text: "DDL 数据定义", link: "/mysql/ddl" },
+            { text: "DML 数据操作", link: "/mysql/dml" },
+            { text: "DQL 数据查询", link: "/mysql/dql" },
+            { text: "MyBatis-Plus 集成", link: "/mysql/mybatis-plus-integration" },
           ],
         },
       ],
