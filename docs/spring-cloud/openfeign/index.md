@@ -161,7 +161,252 @@ public class GitHubService {
 
 `@FeignClient` 内部自动启用了 `SpringMvcContract`，因此接口上可以直接使用 `@GetMapping`、`@PathVariable`、`@RequestBody` 等所有你熟悉的 Spring MVC 注解，和写 Controller 完全一样，学习成本几乎为零。
 
-### 2.1 @GetMapping / @PostMapping / @PutMapping / @DeleteMapping — HTTP 方法
+---
+
+## @FeignClient 注解参数详解
+
+`@FeignClient` 除了用来标记接口，还提供了丰富的参数用于精细控制客户端行为。以下是所有参数的完整说明。
+
+### 参数总览
+
+| 参数 | 类型 | 必填 | 默认值 | 说明 |
+|------|------|------|--------|------|
+| `name` | String | **是** | — | 客户端名称，用于 Spring 容器中的 Bean 名称和配置关联 |
+| `value` | String | 否 | — | `name` 的别名，作用完全相同 |
+| `url` | String | 否 | `""` | 目标服务的绝对 URL（可包含 `{变量}` 占位符） |
+| `path` | String | 否 | `""` | 所有方法的统一路径前缀 |
+| `contextId` | String | 否 | `""` | 自定义客户端上下文 ID，用于区分同名客户端的配置 |
+| `qualifiers` | String[] | 否 | `{}` | 自定义 Bean 限定名，注入时可配合 `@Qualifier` 使用 |
+| `primary` | boolean | 否 | `true` | 是否标记为 Spring 主 Bean |
+| `configuration` | Class<?>[] | 否 | `{}` | 自定义 Feign 配置类（编解码器、拦截器、Contract 等） |
+| `fallback` | Class<?> | 否 | `void.class` | 熔断降级类 |
+| `fallbackFactory` | Class<?> | 否 | `void.class` | 熔断降级工厂（可获取异常信息） |
+| `decode404` | boolean | 否 | `false` | HTTP 404 是否调用 decoder 解码 |
+| `dismiss404` | boolean | 否 | `false` | 是否将 HTTP 404 视为空响应而不抛异常 |
+
+### name / value —— 客户端名称
+
+最核心的参数，**必填**。它有两个作用：
+
+1. **作为 Spring Bean 的名称**注册到容器中
+2. **与 `application.yml` 中的配置关联**——`spring.cloud.openfeign.client.config.{name}` 中的 `{name}` 就是这个值
+
+```java
+// name = "github" → yml 中对应 spring.cloud.openfeign.client.config.github
+@FeignClient(name = "github", url = "https://api.github.com")
+public interface GitHubClient { }
+```
+
+> `value` 是 `name` 的别名，`@FeignClient(value = "github")` 等价于 `@FeignClient(name = "github")`。建议统一使用 `name` 以增加可读性。
+
+### url —— 目标服务地址
+
+指定目标 API 的根地址。支持两种形式：
+
+```java
+// 方式一：写死 URL
+@FeignClient(name = "github", url = "https://api.github.com")
+public interface GitHubClient { }
+
+// 方式二：通过配置文件占位符动态解析（推荐）
+@FeignClient(name = "github", url = "${github.api.url}")
+public interface GitHubClient { }
+```
+
+对应的 `application.yml`：
+
+```yaml
+github:
+  api:
+    url: https://api.github.com
+```
+
+> 当 `url` 不指定时，Feign 会尝试从配置 `spring.cloud.openfeign.client.config.{name}.url` 中读取。如果两者都未设置，则走负载均衡模式（通过 `name` 在注册中心发现服务）。
+
+### path —— 统一路径前缀
+
+当接口中每个方法都有相同的前缀时，可以用 `path` 统一指定，避免在每个方法上重复写：
+
+```java
+// 没有 path：每个方法都要写 /api/v2
+@FeignClient(name = "github", url = "https://api.github.com")
+public interface GitHubClient {
+    @GetMapping("/api/v2/repos/{owner}/{repo}")
+    Repo getRepo(@PathVariable String owner, @PathVariable String repo);
+
+    @GetMapping("/api/v2/repos/{owner}/{repo}/contributors")
+    List<Contributor> contributors(@PathVariable String owner, @PathVariable String repo);
+}
+
+// 有 path：前缀集中管理，方法只用写后半段
+@FeignClient(name = "github", url = "https://api.github.com", path = "/api/v2")
+public interface GitHubClient {
+    @GetMapping("/repos/{owner}/{repo}")             // 实际请求 /api/v2/repos/{owner}/{repo}
+    Repo getRepo(@PathVariable String owner, @PathVariable String repo);
+
+    @GetMapping("/repos/{owner}/{repo}/contributors")
+    List<Contributor> contributors(@PathVariable String owner, @PathVariable String repo);
+}
+```
+
+### contextId —— 自定义上下文 ID
+
+当多个 `@FeignClient` 的 `name` 相同但需要不同的配置时，用 `contextId` 区分：
+
+```java
+// 两个客户端 name 相同，但各自需要不同的拦截器配置
+@FeignClient(contextId = "fooClient", name = "stores",
+             configuration = FooConfiguration.class)
+public interface FooClient { }
+
+@FeignClient(contextId = "barClient", name = "stores",
+             configuration = BarConfiguration.class)
+public interface BarClient { }
+```
+
+> 如果不指定 `contextId`，默认使用 `name` 的值。当多个客户端共享 `name` 时，必须通过 `contextId` 区分，否则配置会互相覆盖。
+
+### qualifiers —— 自定义 Bean 限定名
+
+当同一接口有多个实例需要区分注入时，用 `qualifiers` 定义限定名，注入时配合 `@Qualifier` 使用：
+
+```java
+@FeignClient(name = "github-primary", url = "https://api.github.com",
+             qualifiers = "githubPrimary")
+public interface GitHubClient { }
+
+@Service
+public class MyService {
+    // 通过 @Qualifier 精确指定注入哪个实例
+    @Resource
+    @Qualifier("githubPrimary")
+    private GitHubClient gitHubClient;
+}
+```
+
+### primary —— 是否标记为主 Bean
+
+默认为 `true`。当有多个同类型的 Bean 时，Spring 在自动注入时会优先选择 `primary = true` 的那个：
+
+```java
+// 主客户端（默认 primary = true，注入时优先选这个）
+@FeignClient(name = "github", url = "https://api.github.com")
+public interface GitHubClient { }
+
+// 备用客户端
+@FeignClient(name = "github-backup", url = "https://backup.github-api.com", primary = false)
+public interface GitHubBackupClient { }
+```
+
+### configuration —— 自定义配置类
+
+指定一个或多个 `@Configuration` 类，为该客户端提供**专属的**编解码器、拦截器、Contract 等组件：
+
+```java
+@FeignClient(name = "paypal", url = "https://api-m.paypal.com",
+             configuration = PayPalConfig.class)
+public interface PayPalClient {
+    @PostMapping("/v2/checkout/orders")
+    Order createOrder(@RequestBody OrderRequest request);
+}
+
+// 该配置类仅对 PayPalClient 生效
+public class PayPalConfig {
+    @Bean
+    public RequestInterceptor payPalAuthInterceptor() {
+        return template -> template.header("Authorization", "Bearer " + payPalToken);
+    }
+
+    @Bean
+    public Encoder customEncoder() {
+        return new JacksonEncoder();
+    }
+
+    @Bean
+    Logger.Level feignLoggerLevel() {
+        return Logger.Level.FULL;
+    }
+}
+```
+
+> **注意**：`configuration` 指定的配置类**不要**加 `@Configuration` 注解，否则会变成全局配置影响所有客户端。
+
+### fallback / fallbackFactory —— 熔断降级
+
+当调用失败时执行降级逻辑。`fallback` 直接返回一个实现类，`fallbackFactory` 能额外获取到失败原因：
+
+```java
+// fallback：无法获取异常信息
+@FeignClient(name = "github", url = "https://api.github.com",
+             fallback = GitHubClientFallback.class)
+public interface GitHubClient {
+    @GetMapping("/repos/{owner}/{repo}")
+    Repo getRepo(@PathVariable String owner, @PathVariable String repo);
+}
+
+@Component
+public class GitHubClientFallback implements GitHubClient {
+    @Override
+    public Repo getRepo(String owner, String repo) {
+        return new Repo();  // 返回空对象或默认值
+    }
+}
+```
+
+```java
+// fallbackFactory：能拿到 Throwable 判断失败原因
+@FeignClient(name = "github", url = "https://api.github.com",
+             fallbackFactory = GitHubClientFallbackFactory.class)
+public interface GitHubClient { }
+
+@Component
+public class GitHubClientFallbackFactory implements FallbackFactory<GitHubClient> {
+    @Override
+    public GitHubClient create(Throwable cause) {
+        log.error("GitHub API 调用失败", cause);  // 可以记录异常日志
+        return new GitHubClient() {
+            @Override
+            public Repo getRepo(String owner, String repo) {
+                return new Repo();
+            }
+        };
+    }
+}
+```
+
+> `fallback` 和 `fallbackFactory` 不能同时使用。推荐 `fallbackFactory`，因为可以拿到异常信息用于日志记录和按异常类型做不同降级处理。
+
+### decode404 —— 404 状态码处理
+
+默认为 `false`。当设为 `true` 时，HTTP 404 响应会正常进入 decoder 解码，而不是直接抛异常。适用于某些 API 用 404 表示"资源不存在"作为正常业务逻辑的场景：
+
+```java
+@FeignClient(name = "user-api", url = "${user.api.url}", decode404 = true)
+public interface UserApi {
+    @GetMapping("/users/{id}")
+    UserDTO getById(@PathVariable Long id);  // 用户不存在时返回 UserDTO(null) 而不是抛异常
+}
+```
+
+### dismiss404 —— 将 404 视为空响应
+
+默认为 `false`。与 `decode404` 类似，但 `dismiss404` 会更加激进地将 404 完全视为空响应（返回 null），连 decoder 都不会调用：
+
+```java
+@FeignClient(name = "optional-api", url = "${optional.api.url}", dismiss404 = true)
+public interface OptionalApi {
+    @GetMapping("/data/{id}")
+    DataDTO getData(@PathVariable Long id);  // 404 时返回 null
+}
+```
+
+> `decode404` 和 `dismiss404` 的区别：`decode404=true` 会让 decoder 尝试解析 404 的响应体；`dismiss404=true` 则直接跳过解析返回 null。
+
+---
+
+## 三、方法注解详解
+
+### 3.1 @GetMapping / @PostMapping / @PutMapping / @DeleteMapping — HTTP 方法
 
 这几个注解分别对应 HTTP 的 GET、POST、PUT、DELETE 方法，和你在 Controller 里用的完全一样。
 
@@ -189,7 +434,7 @@ public interface UserApi {
 | `@PutMapping` | PUT | 更新数据 |
 | `@DeleteMapping` | DELETE | 删除数据 |
 
-### 2.2 @RequestMapping — 更灵活的 HTTP 方法声明
+### 3.2 @RequestMapping — 更灵活的 HTTP 方法声明
 
 `@RequestMapping` 是更底层的注解，可以同时指定路径和 HTTP 方法，适合需要绑定多个方法的场景：
 
@@ -205,7 +450,7 @@ public interface UserApi {
 }
 ```
 
-### 2.3 @PathVariable — 路径参数
+### 3.3 @PathVariable — 路径参数
 
 `@PathVariable` 将方法参数绑定到 URL 路径中的 `{变量}` 占位符。当占位符名和方法参数名一致时，可以省略 `@PathVariable` 的 value 属性（Spring 4.3+）。
 
@@ -223,7 +468,7 @@ public interface RepoApi {
 }
 ```
 
-### 2.4 @RequestParam — 查询参数
+### 3.4 @RequestParam — 查询参数
 
 `@RequestParam` 将方法参数拼接为 URL 查询参数（`?key=value`）。也支持 SpringMvcContract 下的 `@SpringQueryMap` 将整个对象展开为查询参数。
 
@@ -247,7 +492,7 @@ params.put("role", "admin");
 api.search(params);  // GET /users/search?status=active&role=admin
 ```
 
-### 2.5 @RequestBody — 请求体
+### 3.5 @RequestBody — 请求体
 
 `@RequestBody` 将方法参数序列化为 HTTP 请求体。配合 `JacksonEncoder`，Java 对象会自动转为 JSON。
 
@@ -264,7 +509,7 @@ public interface OrderApi {
 
 > 正常情况下你只需要用 `@RequestBody` 传对象即可。如果你想精确控制请求体格式（如 XML），仍然可以配合 Feign 原生的 `@Body` 注解使用。
 
-### 2.6 @RequestHeader — 请求头
+### 3.6 @RequestHeader — 请求头
 
 `@RequestHeader` 将方法参数值设置为 HTTP 请求头。配合 `@RequestMapping` 或 `@Headers`（Feign 原生）可以灵活设置静态和动态请求头。
 
@@ -282,7 +527,7 @@ public interface Api {
 }
 ```
 
-### 2.7 @RequestPart — 文件上传（Multipart）
+### 3.7 @RequestPart — 文件上传（Multipart）
 
 当需要上传文件时，用 `@RequestPart` 标记文件参数：
 
@@ -294,7 +539,7 @@ public interface FileApi {
 }
 ```
 
-### 2.8 @CollectionFormat — 集合参数格式
+### 3.8 @CollectionFormat — 集合参数格式
 
 控制数组/集合参数序列化为查询参数时的格式（如 CSV 格式）：
 
@@ -307,7 +552,7 @@ public interface UserApi {
 }
 ```
 
-### 2.9 注解速查表
+### 3.9 注解速查表
 
 | 注解 | 来源 | 作用 | 示例 |
 |------|------|------|------|
@@ -326,9 +571,9 @@ public interface UserApi {
 
 ---
 
-## 三、最佳实践
+## 四、最佳实践
 
-### 3.1 通过 application.yml 统一配置超时
+### 4.1 通过 application.yml 统一配置超时
 
 **适用场景**：使用 `@FeignClient` 后，不需要手动 `Feign.builder()`，所有配置都可以通过 `application.yml` 集中管理。
 
@@ -354,7 +599,7 @@ spring:
 
 > 配置名 `github` 和 `sms-client` 分别对应 `@FeignClient(name = "github")` 和 `@FeignClient(name = "sms-client")` 中的 `name` 属性。
 
-### 3.2 统一认证拦截器（全局生效）
+### 4.2 统一认证拦截器（全局生效）
 
 **适用场景**：调用外部 API 时通常需要认证（如 Bearer Token、API Key），通过 `@Bean` 注册一个全局 `RequestInterceptor`，所有 `@FeignClient` 自动生效。
 
@@ -392,7 +637,7 @@ public class PayPalConfig {
 }
 ```
 
-### 3.3 自定义 ErrorDecoder 统一错误处理
+### 4.3 自定义 ErrorDecoder 统一错误处理
 
 **适用场景**：外部 API 返回的 HTTP 错误状态码（如 404、429、500）需要转换为业务异常，方便上层统一处理。
 
@@ -425,7 +670,7 @@ public class FeignConfig {
 
 > 注册为 `@Bean` 后，所有 `@FeignClient` 都会使用这个 ErrorDecoder。
 
-### 3.4 日志级别控制
+### 4.4 日志级别控制
 
 **适用场景**：开发阶段需要看到完整的请求/响应内容来排查问题，生产环境则只需记录请求 URL 和耗时。
 
@@ -460,7 +705,7 @@ logging:
 
 > 两个配置缺一不可：`loggerLevel` 决定记录什么内容，`logging.level` 决定是否输出。
 
-### 3.5 异常处理
+### 4.5 异常处理
 
 **适用场景**：调用外部 API 时，网络超时、对方服务挂了、返回错误码等情况都需要妥善处理，避免影响主业务流程。
 
@@ -491,7 +736,7 @@ public class GitHubService {
 }
 ```
 
-### 3.6 多客户端统一管理
+### 4.6 多客户端统一管理
 
 **适用场景**：项目需要调用多个不同的外部 API（如 GitHub + 短信服务），每个 API 只需定义一个 `@FeignClient` 接口，通过 `application.yml` 统一管理各自的配置即可。
 
