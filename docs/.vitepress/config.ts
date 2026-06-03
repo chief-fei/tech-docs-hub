@@ -64,8 +64,6 @@ export default defineConfig({
         text: "数据库与缓存",
         items: [
           { text: "MySQL", link: "/mysql/" },
-          { text: "MyBatis", link: "/mysql/mybatis/" },
-          { text: "MyBatis-Plus", link: "/mysql/mybatis-plus/" },
           { text: "Redis", link: "/redis/" },
           { text: "Elasticsearch", link: "/es/" },
         ],
@@ -107,7 +105,6 @@ export default defineConfig({
           { text: "MapStruct", link: "/dev-tools/mapstruct" },
           { text: "EasyExcel", link: "/dev-tools/easyexcel" },
           { text: "XXL-Job", link: "/dev-tools/xxl-job" },
-          { text: "Druid", link: "/dev-tools/druid" },
           { text: "Sa-Token", link: "/dev-tools/sa-token" },
           { text: "Hutool", link: "/utils/hutool" },
           { text: "Netty", link: "/utils/netty" },
@@ -233,7 +230,6 @@ export default defineConfig({
             { text: "MapStruct 对象映射", link: "/dev-tools/mapstruct" },
             { text: "EasyExcel 表格处理", link: "/dev-tools/easyexcel" },
             { text: "XXL-Job 任务调度", link: "/dev-tools/xxl-job" },
-            { text: "Druid 连接池", link: "/dev-tools/druid" },
             { text: "Hutool 工具类库", link: "/utils/hutool" },
             { text: "Netty 网络框架", link: "/utils/netty" },
             { text: "Sa-Token 权限认证", link: "/dev-tools/sa-token" },
@@ -264,6 +260,12 @@ export default defineConfig({
             { text: "DDL 数据定义", link: "/mysql/ddl" },
             { text: "DML 数据操作", link: "/mysql/dml" },
             { text: "DQL 数据查询", link: "/mysql/dql" },
+          ],
+        },
+        {
+          text: "连接池", collapsed: false,
+          items: [
+            { text: "Druid 连接池", link: "/mysql/druid" },
           ],
         },
         {

@@ -15,58 +15,20 @@ SQL（Structured Query Language）按功能可分为四大类：
 
 > 本文档重点介绍 **DDL**、**DML** 和 **DQL**，其中 DQL 是日常开发中使用最频繁的部分。
 
-## 二、MySQL 与 MyBatis-Plus 的关系
-
-在实际项目中，MySQL 通常不直接使用 JDBC 操作，而是通过 ORM 框架（如 MyBatis-Plus）来简化开发。
-
-```mermaid
-flowchart TB
-    subgraph Application["应用层"]
-        Service[Service 层]
-        Mapper[Mapper 层]
-    end
-    
-    subgraph ORM["ORM 框架"]
-        MP[MyBatis-Plus]
-        XML[XML Mapper]
-    end
-    
-    subgraph Database["数据库"]
-        MySQL[(MySQL)]
-    end
-    
-    Service --> Mapper
-    Mapper --> MP
-    Mapper --> XML
-    MP --> MySQL
-    XML --> MySQL
-    
-    style Application fill:#e1f5fe
-    style ORM fill:#fff3e0
-    style Database fill:#f3e5f5
-```
-
-**分工说明：**
-
-| 层级 | 职责 | 工具 |
-|------|------|------|
-| **简单 CRUD** | 单表增删改查 | MyBatis-Plus `BaseMapper` |
-| **复杂查询** | 多表关联、动态条件 | XML Mapper |
-| **数据库管理** | 建表、改表、索引 | DDL 语句 |
-| **数据维护** | 批量导入、数据修复 | DML 语句 |
-
-## 三、文档目录
+## 二、文档目录
 
 | 文档 | 说明 |
 |------|------|
 | [DDL 数据定义](./ddl) | 数据库、表、索引的创建与修改 |
 | [DML 数据操作](./dml) | 数据的插入、更新、删除 |
 | [DQL 数据查询](./dql) | SELECT 查询、JOIN、子查询、聚合函数（重点） |
-| [MyBatis-Plus 集成](./mybatis-plus-integration) | MySQL 与 MyBatis-Plus 结合使用 |
+| [MyBatis XML 详解](./mybatis/) | MyBatis 核心配置与 XML 映射 |
+| [MyBatis-Plus 使用指南](./mybatis-plus/) | MyBatis-Plus 增强 CRUD 操作 |
+| [Druid 连接池](./druid) | 数据库连接池、SQL 监控、防火墙 |
 
-## 四、快速开始
+## 三、快速开始
 
-### 4.1 连接 MySQL
+### 3.1 连接 MySQL
 
 ```bash
 # 命令行连接
@@ -76,7 +38,7 @@ mysql -u root -p
 mysql -h 127.0.0.1 -P 3306 -u root -p
 ```
 
-### 4.2 Spring Boot 集成
+### 3.2 Spring Boot 集成
 
 ```yaml
 # application.yml
@@ -97,7 +59,7 @@ spring:
 </dependency>
 ```
 
-## 五、示例数据
+## 四、示例数据
 
 本文档使用以下示例表进行演示：
 

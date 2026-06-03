@@ -1,10 +1,12 @@
-# Druid 1.2.x 完全指南
+# Druid 连接池
+
+Druid 是阿里巴巴开源的高性能数据库连接池，作为 MySQL 数据源管理工具的重要组成部分。
 
 ## 概述
 
 Druid 是阿里巴巴开源的高性能数据库连接池，提供了强大的监控和扩展能力。相比 HikariCP，Druid 内置了 SQL 监控、SQL 防火墙、Web 监控页面等功能，是生产环境的最佳选择。
 
-> **兼容性**：Druid 1.2.x 基于 JDK 8+，与 Spring Boot 2.7.x 完全兼容。
+> **兼容性**：Druid 1.2.x 基于 JDK 8+，与 Spring Boot 2.7.x 完全兼容，是 MySQL 数据源管理的首选连接池。
 
 ### Druid vs HikariCP
 

@@ -31,26 +31,80 @@ features:
     details: 文档基于 Spring Boot 2.x 生态，结合官方文档和一线实战经验持续更新维护
 ---
 
+## 学习路线图
+
+```mermaid
+flowchart LR
+  subgraph S1["第一阶段：Java基础与项目构建"]
+    direction LR
+    A["Java 8+"] --> B["Maven<br/>/dev-tools/maven"] --> C["Lombok<br/>/cola/lombok"] --> D["项目结构规范"]
+  end
+
+  subgraph S2["第二阶段：Spring Boot 2.7.x核心"]
+    direction LR
+    E["概述<br/>/spring-boot/"] --> F["Controller<br/>/spring-boot/controller"]
+    F --> G["Filter / Interceptor<br/>/spring-boot/filter<br/>/spring-boot/interceptor"]
+    G --> H["全局异常处理<br/>/spring-boot/exception"]
+    H --> I["AOP<br/>/spring-boot/aop"]
+    I --> J["事务管理<br/>/spring-boot/transaction"]
+    J --> K["Bean管理<br/>/spring-boot/bean"]
+    K --> L["配置与属性<br/>/spring-boot/config"]
+    L --> M["javax.validation校验<br/>/spring-boot/validation"]
+    M --> N["注解速查<br/>/spring-boot/annotations"]
+  end
+
+  subgraph S3["第三阶段：数据库与缓存"]
+    direction LR
+    O["MySQL<br/>DDL/DML/DQL<br/>/mysql/"] --> P["MyBatis<br/>/mysql/mybatis/"]
+    P --> Q["MyBatis-Plus<br/>/mysql/mybatis-plus/"]
+    Q --> R["Druid连接池<br/>/mysql/druid"]
+    R --> S["Redis<br/>/redis/"]
+    S --> T["Redisson分布式锁<br/>/redis/redisson-lock"]
+    T --> U["Elasticsearch<br/>/es/"]
+  end
+
+  subgraph S4["第四阶段：架构设计"]
+    direction LR
+    V["COLA概述<br/>/cola/"] --> W["六大模块<br/>/cola/architecture"]
+    W --> X["核心组件<br/>/cola/components/index"]
+  end
+
+  subgraph S5["第五阶段：微服务生态"]
+    direction LR
+    Y["Nacos<br/>/spring-cloud/nacos/"] --> Z["OpenFeign<br/>/spring-cloud/openfeign/"]
+    Z --> AA["Gateway<br/>/spring-cloud/gateway"]
+    AA --> AB["Sentinel<br/>/spring-cloud/sentinel"]
+    AB --> AC["Seata<br/>/spring-cloud/seata"]
+    AC --> AD["RocketMQ<br/>/spring-cloud/rocketmq/"]
+  end
+
+  subgraph S6["第六阶段：生产运维与工具"]
+    direction LR
+    AE["Docker<br/>/docker/"] --> AF["XXL-Job<br/>/dev-tools/xxl-job"]
+    AF --> AG["Sa-Token<br/>/dev-tools/sa-token"]
+    AG --> AH["EasyExcel<br/>/dev-tools/easyexcel"]
+    AH --> AI["MapStruct<br/>/dev-tools/mapstruct"]
+    AI --> AJ["阿里云OSS<br/>/dev-tools/aliyun-oss"]
+    AJ --> AK["Jasypt<br/>/dev-tools/jasypt"]
+    AK --> AL["Hutool<br/>/utils/hutool"]
+    AL --> AM["Netty<br/>/utils/netty"]
+  end
+
+  S1 --> S2 --> S3 --> S4 --> S5 --> S6
+```
+
 ## 技术栈
 
 | 分类 | 技术 | 说明 |
 |------|------|------|
 | **架构** | [COLA](./cola/) | 整洁面向对象分层架构，DDD 落地实践 |
 | **核心** | [Spring Boot 2.7.x](./spring-boot/) | Controller、Filter、Interceptor、Transaction、AOP、Bean、Config 全解析 |
-| **数据库** | [MySQL](./mysql/) | DDL/DML/DQL + MyBatis/MyBatis-Plus 注解速查与集成实战 |
-| **缓存** | [Redis](./redis/) | String/Hash/List/Set/ZSet 全面指南 + Redisson 分布式锁 |
-| **搜索** | [Elasticsearch](./es/) | 数据类型、Mapping、索引 CRUD、文档 CRUD、Spring Boot 集成 |
+| **数据库** | [MySQL](./mysql/) + [MyBatis](./mysql/mybatis/)/[MyBatis-Plus](./mysql/mybatis-plus/) + [Druid](./mysql/druid) | DDL/DML/DQL + ORM + 连接池 |
+| **缓存** | [Redis](./redis/) + [Redisson](./redis/redisson-lock) | 数据类型全指南 + 分布式锁 |
+| **搜索** | [Elasticsearch](./es/) | 数据类型、Mapping、索引CRUD、文档CRUD、Spring Boot集成 |
 | **容器** | [Docker](./docker/) | 镜像管理、容器操作、Dockerfile、Compose、部署实战 |
-| **微服务** | [Nacos](./spring-cloud/nacos/) | 注册中心 + 配置中心，多环境隔离 |
-| **微服务** | [RocketMQ](./spring-cloud/rocketmq/) | 同步/异步/顺序/延迟/事务消息 |
-| **微服务** | [Dubbo](./spring-cloud/dubbo/) | 高性能 RPC，负载均衡 + 集群容错 |
-| **微服务** | [OpenFeign](./spring-cloud/openfeign/) | 声明式 HTTP 调用，熔断降级 |
-
----
-
-::: tip 快速导航
-`/cola/` COLA · `/spring-boot/` Spring Boot · `/mysql/` MySQL · `/redis/` Redis · `/docker/` Docker · `/es/` ES · `/spring-cloud/` 微服务
-:::
+| **微服务** | [Nacos](./spring-cloud/nacos/)/[OpenFeign](./spring-cloud/openfeign/)/[RocketMQ](./spring-cloud/rocketmq/)/[Sentinel](./spring-cloud/sentinel)/[Seata](./spring-cloud/seata)/[Gateway](./spring-cloud/gateway) | 注册配置中心、声明式调用、消息队列、熔断降级、分布式事务、网关 |
+| **开发工具** | [Maven](./dev-tools/maven)/[MapStruct](./dev-tools/mapstruct)/[EasyExcel](./dev-tools/easyexcel)/[XXL-Job](./dev-tools/xxl-job)/[Sa-Token](./dev-tools/sa-token)/[OSS](./dev-tools/aliyun-oss)/[Jasypt](./dev-tools/jasypt)/[Hutool](./utils/hutool)/[Netty](./utils/netty) | 构建、对象映射、Excel、定时任务、权限认证、云存储、加密、工具库、网络编程 |
 
 ---
 
