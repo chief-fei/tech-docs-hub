@@ -4,9 +4,11 @@
 
 ## 前置条件
 
-- **Java 8+**
+- **Java 8+**（推荐 JDK 8 或 JDK 11，Spring Boot 2.7.x 最高支持 JDK 17）
 - **Maven 3.6+**
-- **Spring Boot 2.x**
+- **Spring Boot 2.7.x**（推荐 2.7.18，最新稳定版本）
+
+> **版本说明**：COLA 5.0.0 同时兼容 Spring Boot 2.7.x 和 Spring Boot 3.x。本指南以 Spring Boot 2.7.18 为基准，所有代码示例使用 `javax.*` 命名空间。
 
 ## 方式一：使用 Maven Archetype 创建项目
 

@@ -5,11 +5,13 @@
 这是一个基于 **COLA（Clean Object Layer Architecture）** 架构的 Java 多模块项目示例。项目使用 Spring Boot + MyBatis + Maven 进行构建，演示了如何在实际工程中应用 DDD（领域驱动设计）和分层架构思想。
 
 ### 项目信息
-- **框架**：Spring Boot 2.7.2
+- **框架**：Spring Boot 2.7.18
 - **构建工具**：Maven
 - **数据库**：MySQL
-- **ORM**：MyBatis 2.2.2
+- **ORM**：MyBatis 2.2.2（mybatis-spring-boot-starter）
 - **COLA 版本**：5.0.0
+
+> **版本兼容说明**：COLA 5.0.0 同时兼容 Spring Boot 2.7.x（使用 `javax.*`）和 Spring Boot 3.x（使用 `jakarta.*`）。本文档所有示例均基于 Spring Boot 2.7.18，请确保项目依赖使用 `javax.*` 命名空间。
 
 ---
 

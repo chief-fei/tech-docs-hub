@@ -2,6 +2,8 @@
 
 本文档汇总了所有 COLA 5.0.0 组件的详细使用指南，方便快速查找。
 
+> **版本兼容说明**：本文档基于 COLA 5.0.0 + Spring Boot 2.7.18 编写。COLA 5.0.0 同时兼容 Spring Boot 2.7.x（使用 `javax.*` 命名空间）和 Spring Boot 3.x（使用 `jakarta.*` 命名空间）。本系列文档所有示例均以 Spring Boot 2.7.x 为基准，相关 Spring Boot 文档请参考 [Spring Boot 2.7.x 文档](../spring-boot/index.md)。
+
 ## 📚 目录
 
 ### 1. 总体指南
@@ -405,4 +407,4 @@ cola-component-lock-starter (可选)
 
 ---
 
-**最后更新**：2024 年 4 月
+**最后更新**：2025 年 6 月
