@@ -11,7 +11,7 @@ export default defineConfig({
   extends: teekConfig,
   title: "技术文档中心",
   description: description,
-  base: ".",
+  base: "/",
   cleanUrls: false,
   lastUpdated: true,
   lang: "zh-CN",
