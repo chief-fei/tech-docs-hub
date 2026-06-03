@@ -11,12 +11,12 @@ export default defineConfig({
   extends: teekConfig,
   title: "技术文档中心",
   description: description,
-  base: "/tech-docs-hub/",
+  base: ".",
   cleanUrls: false,
   lastUpdated: true,
   lang: "zh-CN",
   head: [
-    ["link", { rel: "icon", type: "image/svg+xml", href: "/tech-docs-hub/favicon.svg" }],
+    ["link", { rel: "icon", type: "image/svg+xml", href: "./favicon.svg" }],
     ["meta", { property: "og:type", content: "website" }],
     ["meta", { property: "og:locale", content: "zh-CN" }],
     ["meta", { property: "og:title", content: "技术文档中心 | Java 生态技术栈指南" }],
@@ -87,6 +87,14 @@ export default defineConfig({
         ],
       },
       { text: "Docker", link: "/docker/" },
+      {
+        text: "工具类库",
+        items: [
+          { text: "概述", link: "/utils/" },
+          { text: "Hutool", link: "/utils/hutool" },
+          { text: "Netty", link: "/utils/netty" },
+        ],
+      },
       {
         text: "微服务",
         items: [
@@ -192,6 +200,16 @@ export default defineConfig({
             { text: "配置与属性", link: "/spring-boot/config" },
             { text: "javax.validation 校验", link: "/spring-boot/validation" },
             { text: "注解速查", link: "/spring-boot/annotations" },
+          ],
+        },
+      ],
+      "/utils/": [
+        {
+          text: "常用工具类库", collapsed: false,
+          items: [
+            { text: "概述", link: "/utils/" },
+            { text: "Hutool 工具类库", link: "/utils/hutool" },
+            { text: "Netty 网络框架", link: "/utils/netty" },
           ],
         },
       ],
