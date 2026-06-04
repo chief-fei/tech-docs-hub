@@ -1,4 +1,5 @@
 import { defineConfig } from "vitepress";
+import { withMermaid } from "vitepress-plugin-mermaid";
 import llmstxt from "vitepress-plugin-llms";
 import { teekConfig } from "./teekConfig";
 
@@ -7,7 +8,7 @@ const description = [
   "覆盖 COLA、Redis、Docker、Elasticsearch、Spring Cloud 等主流技术栈",
 ].toString();
 
-export default defineConfig({
+export default withMermaid(defineConfig({
   extends: teekConfig,
   title: "技术文档中心",
   description: description,
@@ -290,4 +291,4 @@ export default defineConfig({
     },
   },
   vite: { plugins: [llmstxt() as any] },
-});
+}));
