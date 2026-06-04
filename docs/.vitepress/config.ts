@@ -274,11 +274,8 @@ export default withMermaid(defineConfig({
         {
           text: "ORM 框架", collapsed: false,
           items: [
-            { text: "MyBatis XML 详解", link: "/mysql/mybatis/" },
-            { text: "MyBatis 注解速查", link: "/mysql/mybatis-annotations" },
-            { text: "MyBatis-Plus 使用指南", link: "/mysql/mybatis-plus/" },
-            { text: "MyBatis-Plus 注解速查", link: "/mysql/mybatis-plus-annotations" },
-            { text: "MyBatis-Plus 集成实战", link: "/mysql/mybatis-plus-integration" },
+            { text: "MyBatis 完全指南", link: "/mysql/mybatis" },
+            { text: "MyBatis-Plus 完全指南", link: "/mysql/mybatis-plus" },
           ],
         },
       ],
