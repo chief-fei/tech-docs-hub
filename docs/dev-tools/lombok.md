@@ -7,7 +7,6 @@
 ## 1. 快速结论
 
 - Lombok 的注解大致分为：`数据类`、`构造器`、`对象方法`、`构建器`、`空安全`、`并发/异常`、`日志`、`实验特性`。
-- 你当前项目最常用的是 `@Data`（例如 `demo-web-client/src/main/java/com/alibaba/demo/dto/CustomerAddCmd.java`、`demo-web-infrastructure/src/main/java/com/alibaba/demo/customer/CustomerDO.java`）。
 - 在生产代码中，建议优先用“更精确”的注解组合，避免无脑 `@Data`。
 
 ---
@@ -217,15 +216,13 @@ public class CustomerService {
 
 ---
 
-## 4. 你项目里的 Lombok 使用建议
+## 4. Lombok 使用建议
 
-基于当前代码（`@Data` 使用较多）：
-
-1. DTO / DO 保留 `@Data`：如 `demo-web-client/src/main/java/com/alibaba/demo/dto/data/CustomerDTO.java`、`demo-web-infrastructure/src/main/java/com/alibaba/demo/customer/CustomerDO.java`。
-2. 领域实体尽量精确注解：优先 `@Getter` + 有选择的 setter/业务方法，减少“全部可变”。
-3. 服务类建议日志注解：可在应用层引入 `@Slf4j`，统一日志风格。
-4. 参数多的查询对象可考虑 `@Builder`，提高构造可读性。
-5. `@SneakyThrows`、实验注解仅在明确收益场景使用，并在代码评审中注明理由。
+1. **DTO / DO 保留 `@Data`**：纯数据载体类（如请求/响应 DTO、数据库 DO）适合使用 `@Data`。
+2. **领域实体尽量精确注解**：优先 `@Getter` + 有选择的 setter/业务方法，减少“全部可变”。
+3. **服务类建议日志注解**：在应用层引入 `@Slf4j`，统一日志风格。
+4. **参数多的查询对象可考虑 `@Builder`**：提高构造可读性。
+5. **`@SneakyThrows`、实验注解仅在明确收益场景使用**，并在代码评审中注明理由。
 
 ---
 
@@ -239,7 +236,57 @@ public class CustomerService {
 
 ---
 
-## 6. 推荐文档入口
+## 6. 快速开始
+
+### Maven 依赖引入
+
+在 `pom.xml` 中添加 Lombok 依赖：
+
+```xml
+<dependency>
+    <groupId>org.projectlombok</groupId>
+    <artifactId>lombok</artifactId>
+    <version>1.18.30</version>
+    <scope>provided</scope>
+</dependency>
+```
+
+如果使用 Spring Boot 2.7.x，通常只需在 `pom.xml` 的 `<parent>` 中指定 Spring Boot 版本，Lombok 版本由 Spring Boot 自动管理：
+
+```xml
+<dependency>
+    <groupId>org.projectlombok</groupId>
+    <artifactId>lombok</artifactId>
+    <scope>provided</scope>
+</dependency>
+```
+
+### IDE 插件安装
+
+#### IntelliJ IDEA
+
+1. 打开 **File → Settings → Plugins**
+2. 搜索 **Lombok** 插件
+3. 安装并重启 IDEA
+
+> 注意：IntelliJ IDEA 2020.3 及以后版本已内置 Lombok 支持，无需额外安装插件。
+
+#### Eclipse
+
+1. 下载 Lombok jar 包：`https://projectlombok.org/downloads/lombok.jar`
+2. 双击运行 jar 文件，选择 Eclipse 安装目录
+3. 重启 Eclipse
+
+### 版本兼容性
+
+| Lombok 版本 | Spring Boot 2.7.x | JDK 要求 |
+|-------------|-------------------|----------|
+| 1.18.24+    | ✅ 兼容            | JDK 8+   |
+| 1.18.30     | ✅ 推荐            | JDK 8+   |
+
+---
+
+## 7. 推荐文档入口
 
 - 官方稳定特性：`https://projectlombok.org/features/all`
 - 官方实验特性：`https://projectlombok.org/features/experimental/all`

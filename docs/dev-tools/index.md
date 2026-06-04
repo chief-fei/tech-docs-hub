@@ -13,6 +13,7 @@ Java 开发中常用的构建工具、代码生成器、数据处理库、定时
 | **Druid** | [druid.md](./druid.md) | 1.2.x | 数据库连接池，SQL 监控与防火墙 |
 | **Sa-Token** | [sa-token.md](./sa-token.md) | 1.37.x | 轻量级权限认证框架 |
 | **Jasypt** | [jasypt.md](./jasypt.md) | 3.0.5 | 配置文件敏感信息加密 |
+| **Lombok** | [lombok.md](./lombok.md) | 1.18.30 | 注解驱动代码生成，减少样板代码 |
 
 ## 快速选择指南
 
@@ -25,6 +26,7 @@ Java 开发中常用的构建工具、代码生成器、数据处理库、定时
 | 数据库连接池 + SQL 监控 | Druid |
 | 登录认证、权限校验、OAuth2 | Sa-Token |
 | 配置文件密码加密 | Jasypt |
+| 减少样板代码、自动生成 getter/setter | Lombok |
 
 ## 推荐学习路线
 
@@ -35,6 +37,7 @@ Java 开发中常用的构建工具、代码生成器、数据处理库、定时
 5. **权限认证**：学 [Sa-Token](./sa-token.md) — 比 Spring Security 更轻量的认证方案
 6. **定时任务**：学 [XXL-Job](./xxl-job.md) — 分布式环境下的任务调度
 7. **配置安全**：学 [Jasypt](./jasypt.md) — 保护配置文件中的敏感信息
+8. **减少样板代码**：学 [Lombok](./lombok.md) — 自动生成 getter/setter/构造器等，提升开发效率
 
 ---
 
@@ -51,6 +54,7 @@ Java 开发中常用的构建工具、代码生成器、数据处理库、定时
 | Druid | 1.2.x | JDK 8+ | ✅ |
 | Sa-Token | 1.37.x | JDK 8+ | ✅ |
 | Jasypt | 3.0.5 | JDK 8+ | ✅ |
+| Lombok | 1.18.30 | JDK 8+ | ✅ |
 
 > 所有工具均基于 **JDK 8+** 构建，与 **Spring Boot 2.7.x** 完全兼容。
 
