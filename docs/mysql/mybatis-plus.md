@@ -114,6 +114,29 @@ public interface UserMapper extends BaseMapper<User> {
 }
 ```
 
+### BaseMapper 核心方法
+
+继承 `BaseMapper<T>` 后，Mapper 接口自动获得以下通用 CRUD 方法：
+
+| 方法 | 说明 | 示例 |
+|------|------|------|
+| `insert(T entity)` | 插入一条记录 | `userMapper.insert(user)` |
+| `deleteById(Serializable id)` | 按 ID 删除 | `userMapper.deleteById(1L)` |
+| `deleteByMap(Map<String, Object> columnMap)` | 按 Map 条件删除 | `userMapper.deleteByMap(map)` |
+| `delete(Wrapper<T> wrapper)` | 条件删除 | `userMapper.delete(wrapper)` |
+| `deleteBatchIds(Collection<? extends Serializable> idList)` | 批量 ID 删除 | `userMapper.deleteBatchIds(ids)` |
+| `updateById(T entity)` | 按 ID 更新 | `userMapper.updateById(user)` |
+| `update(T entity, Wrapper<T> updateWrapper)` | 条件更新 | `userMapper.update(user, wrapper)` |
+| `selectById(Serializable id)` | 按 ID 查询 | `userMapper.selectById(1L)` |
+| `selectBatchIds(Collection<? extends Serializable> idList)` | 批量 ID 查询 | `userMapper.selectBatchIds(ids)` |
+| `selectByMap(Map<String, Object> columnMap)` | 按 Map 查询 | `userMapper.selectByMap(map)` |
+| `selectOne(Wrapper<T> queryWrapper)` | 查询单条 | `userMapper.selectOne(wrapper)` |
+| `selectCount(Wrapper<T> queryWrapper)` | 查询总数 | `userMapper.selectCount(wrapper)` |
+| `selectList(Wrapper<T> queryWrapper)` | 条件查询列表 | `userMapper.selectList(wrapper)` |
+| `selectMaps(Wrapper<T> queryWrapper)` | 查询 Map 列表 | `userMapper.selectMaps(wrapper)` |
+| `selectObjs(Wrapper<T> queryWrapper)` | 查询对象列表 | `userMapper.selectObjs(wrapper)` |
+| `selectPage(IPage<T> page, Wrapper<T> queryWrapper)` | 分页查询 | `userMapper.selectPage(page, wrapper)` |
+
 ### 自定义 SQL —— XML 方式
 
 ```xml
@@ -267,20 +290,102 @@ public class UserServiceImpl
 }
 ```
 
-继承后可用的方法：
+### ServiceImpl 核心方法
+
+继承 `ServiceImpl<M extends BaseMapper<T>, T>` 后，Service 层自动获得以下增强方法：
+
+| 方法 | 说明 | 示例 |
+|------|------|------|
+| `save(T entity)` | 保存一条记录 | `userService.save(user)` |
+| `saveBatch(Collection<T> entityList)` | 批量保存 | `userService.saveBatch(list)` |
+| `saveOrUpdate(T entity)` | 保存或更新 | `userService.saveOrUpdate(user)` |
+| `removeById(Serializable id)` | 按 ID 删除 | `userService.removeById(1L)` |
+| `removeByMap(Map<String, Object> columnMap)` | 按 Map 删除 | `userService.removeByMap(map)` |
+| `remove(Wrapper<T> queryWrapper)` | 条件删除 | `userService.remove(wrapper)` |
+| `removeBatchIds(Collection<? extends Serializable> idList)` | 批量删除 | `userService.removeBatchIds(ids)` |
+| `updateById(T entity)` | 按 ID 更新 | `userService.updateById(user)` |
+| `update(Wrapper<T> updateWrapper)` | 条件更新 | `userService.update(wrapper)` |
+| `update(T entity, Wrapper<T> updateWrapper)` | 按实体条件更新 | `userService.update(user, wrapper)` |
+| `getById(Serializable id)` | 按 ID 查询 | `userService.getById(1L)` |
+| `getOne(Wrapper<T> queryWrapper, boolean throwEx)` | 查询单条 | `userService.getOne(wrapper)` |
+| `list()` | 查询全部 | `userService.list()` |
+| `list(Wrapper<T> queryWrapper)` | 条件查询 | `userService.list(wrapper)` |
+| `listByIds(Collection<? extends Serializable> idList)` | 批量 ID 查询 | `userService.listByIds(ids)` |
+| `listByMap(Map<String, Object> columnMap)` | 按 Map 查询 | `userService.listByMap(map)` |
+| `listMaps(Wrapper<T> queryWrapper)` | 查询 Map 列表 | `userService.listMaps(wrapper)` |
+| `listObjs(Wrapper<T> queryWrapper)` | 查询对象列表 | `userService.listObjs(wrapper)` |
+| `page(IPage<T> page, Wrapper<T> queryWrapper)` | 分页查询 | `userService.page(page, wrapper)` |
+| `count()` | 查询总数 | `userService.count()` |
+| `count(Wrapper<T> queryWrapper)` | 条件查询总数 | `userService.count(wrapper)` |
+
+### BaseMapper vs ServiceImpl 选型
+
+| 场景 | 推荐方式 | 原因 |
+|------|---------|------|
+| 简单 CRUD | `BaseMapper` | 直接、轻量，无需 Service 层 |
+| 复杂业务逻辑 | `ServiceImpl` | 封装业务逻辑，便于事务管理 |
+| 批量操作 | `ServiceImpl` | 提供 `saveBatch` 等批量方法 |
+| 链式操作 | `ServiceImpl` | 支持 Lambda 链式查询 |
+| 需要事务 | `ServiceImpl` | 在 Service 层统一加 `@Transactional` |
+
+**层级关系：**
+
+```
+ServiceImpl → IService → BaseMapper
+    ↓
+  封装业务逻辑 + 事务管理
+```
+
+### ServiceImpl 使用示例
 
 ```java
-userService.save(user);              // 保存
-userService.saveBatch(list);         // 批量保存
-userService.saveOrUpdate(user);      // 保存/更新
-userService.removeById(1001L);       // 删
-userService.remove(wrapper);         // 条件删
-userService.updateById(user);        // 按 ID 更新
-userService.update(wrapper);         // 条件更新
-userService.getById(1001L);          // 查
-userService.list(wrapper);           // 条件查
-userService.page(page, wrapper);     // 分页
-userService.count();                 // 总数
+@Service
+public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
+
+    // 1. 保存用户
+    public boolean addUser(User user) {
+        return save(user);
+    }
+
+    // 2. 批量保存（每 500 条提交一次）
+    public boolean addUsers(List<User> users) {
+        return saveBatch(users, 500);
+    }
+
+    // 3. 根据 ID 查询
+    public User getUserById(Long id) {
+        return getById(id);
+    }
+
+    // 4. 条件查询
+    public List<User> getUsersByStatus(Integer status) {
+        return list(new LambdaQueryWrapper<User>()
+            .eq(User::getStatus, status));
+    }
+
+    // 5. 分页查询
+    public Page<User> getUserPage(int current, int size) {
+        return page(new Page<>(current, size));
+    }
+
+    // 6. 更新用户
+    public boolean updateUser(User user) {
+        return updateById(user);
+    }
+
+    // 7. 删除用户
+    public boolean removeUser(Long id) {
+        return removeById(id);
+    }
+
+    // 8. 复杂业务：带事务的查询并处理
+    @Transactional
+    public void transferUser(Long fromId, Long toId) {
+        User fromUser = getById(fromId);
+        User toUser = getById(toId);
+        // ... 业务逻辑处理
+    }
+}
 ```
 
 ## 九、SQL 与 API 对照速查
