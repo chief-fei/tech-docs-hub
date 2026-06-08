@@ -613,6 +613,8 @@ public interface CustomerRepository {
 </dependency>
 ```
 
+> **注意**：COLA 5.0.0 要求 JDK 17+，仅支持 Spring Boot 3.x。如需 Spring Boot 2.7.x 支持，请使用 COLA 4.x 版本。
+
 ## 最佳实践
 
 ### 1. 设计聚合根

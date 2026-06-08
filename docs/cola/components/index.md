@@ -1151,23 +1151,24 @@ public class GlobalExceptionHandler {
 
 ---
 
-## 版本兼容性
+### 版本兼容性
 
-本指南基于 **COLA 5.0.0 + Spring Boot 2.7.18** 版本编写。
+本指南基于 **COLA 5.0.0 + Spring Boot 3.x** 版本编写。
 
 ### Spring Boot 版本说明
 
-COLA 5.0.0 同时兼容以下 Spring Boot 版本：
+| COLA 版本 | Spring Boot 版本 | 命名空间 | JDK 要求 | 状态 |
+|------|------|------|------|------|
+| **5.0.0** | **3.x** | `jakarta.*` | **JDK 17+** | ✅ 当前版本 |
+| 4.x | 2.7.x | `javax.*` | JDK 8+ | 历史版本 |
 
-| Spring Boot 版本 | 命名空间 | JDK 要求 | 状态 |
-|------|------|------|------|
-| **2.7.x**（推荐 2.7.18） | `javax.*` | JDK 8 - 17 | ✅ 本文档基准版本 |
-| 3.x | `jakarta.*` | JDK 17+ | ⚠️ 需要迁移命名空间 |
+**注意**：COLA 5.0.0 使用 JDK 17 编译，不支持 JDK 8。如需在 Spring Boot 2.7.x 环境下使用，请选择 COLA 4.x 版本。
 
-如果你使用的是 Spring Boot 3.x，需要注意：
+如果你从 COLA 4.x 升级到 5.0.0，需要注意：
 - 将 `javax.validation` 替换为 `jakarta.validation`
 - 将 `javax.servlet` 替换为 `jakarta.servlet`
 - 将 `javax.persistence` 替换为 `jakarta.persistence`
+- 将 JDK 升级到 17+
 
 如果使用其他 COLA 版本（如 4.x 或 3.x），部分 API 可能有所不同。建议：
 1. 查看官方 GitHub 项目的 release notes

@@ -543,7 +543,11 @@ public class LockMonitor {
     <groupId>com.alibaba.cola</groupId>
     <artifactId>cola-component-lock-starter</artifactId>
 </dependency>
+```
 
+> **注意**：COLA 5.0.0 要求 JDK 17+，仅支持 Spring Boot 3.x。如需 Spring Boot 2.7.x 支持，请使用 COLA 4.x 版本。
+
+```xml
 <dependency>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-data-redis</artifactId>

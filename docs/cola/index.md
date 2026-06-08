@@ -2,7 +2,7 @@
 
 本文档汇总了所有 COLA 5.0.0 组件的详细使用指南，方便快速查找。
 
-> **版本兼容说明**：本文档基于 COLA 5.0.0 + Spring Boot 2.7.18 编写。COLA 5.0.0 同时兼容 Spring Boot 2.7.x（使用 `javax.*` 命名空间）和 Spring Boot 3.x（使用 `jakarta.*` 命名空间）。本系列文档所有示例均以 Spring Boot 2.7.x 为基准，相关 Spring Boot 文档请参考 [Spring Boot 2.7.x 文档](../spring-boot/index.md)。
+> **版本兼容说明**：本文档基于 COLA 5.0.0 + Spring Boot 3.x 编写。COLA 5.0.0 要求 **JDK 17+**，仅支持 **Spring Boot 3.x**（使用 `jakarta.*` 命名空间）。如需在 Spring Boot 2.7.x（JDK 8）环境下使用，请选择 COLA 4.x 版本。相关 Spring Boot 文档请参考 [Spring Boot 2.7.x 文档](../spring-boot/index.md)。
 
 ## 📚 目录
 
