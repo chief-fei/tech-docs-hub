@@ -37,7 +37,6 @@ Spring Boot 2.7.x 是 Spring Boot 2.x 系列的最终生产版（最终版本 2.
 | [Bean 管理与注入](./bean) | @Bean、@Component、@Autowired 注入方式 |
 | [配置类与属性绑定](./config) | @Configuration、@ConfigurationProperties、@Value |
 | [注解速查手册](./annotations) | 业务常用注解速查，含参数解析 |
-| [Swagger API 文档](./swagger) | Springfox 3.0 集成、注解使用、配置详解 |
 
 ## 自动配置原理
 

@@ -83,7 +83,6 @@ export default withMermaid(defineConfig({
           { text: "配置与属性", link: "/spring-boot/config" },
           { text: "javax.validation 校验", link: "/spring-boot/validation" },
           { text: "注解速查", link: "/spring-boot/annotations" },
-          { text: "Swagger API 文档", link: "/spring-boot/swagger" },
         ],
       },
       { text: "Docker", link: "/docker/" },
