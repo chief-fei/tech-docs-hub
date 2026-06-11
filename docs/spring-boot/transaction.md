@@ -213,6 +213,87 @@ public void save() {
 
 MySQL 的 MyISAM 引擎不支持事务，必须使用 **InnoDB**。
 
+### 5. 多线程环境
+
+```java
+@Transactional
+public void batchProcess() {
+    // ❌ 新线程中的操作不在当前事务中
+    new Thread(() -> {
+        userMapper.insert(user);  // 不在事务中，不会回滚
+    }).start();
+}
+```
+
+**原因：** Spring 事务通过 `ThreadLocal` 绑定数据库连接，事务信息只存在于当前线程中。新线程无法获取当前事务。
+
+### 6. @Transactional 方法被同一个类中的非事务方法调用
+
+```java
+@Service
+public class UserService {
+
+    // ❌ 事务失效！
+    public void outerMethod() {
+        // 通过 this 直接调用，绕过了代理
+        this.innerMethod();
+    }
+
+    @Transactional
+    public void innerMethod() {
+        // 这里的 @Transactional 不会生效
+    }
+}
+```
+
+**原因：** Spring AOP 代理只能拦截从外部进入代理对象的方法调用。类内部通过 `this` 调用时，直接调用的是目标对象的方法，不会经过代理。
+
+> 解决方法与"同类内部方法调用"一致：注入自身或抽离到另一个 Service。
+
+### 7. 默认回滚策略：只回滚 RuntimeException 和 Error
+
+Spring 默认只对 `RuntimeException` 和 `Error` 进行回滚，**受检异常（Checked Exception）不会触发回滚**：
+
+```java
+@Transactional
+public void importData() throws IOException {
+    fileMapper.insert(record);
+    // ❌ 抛出 IOException（受检异常），事务不会回滚！
+    throw new IOException("文件读取失败");
+}
+```
+
+**解决方案：**
+
+```java
+// 方案一：指定 rollbackFor
+@Transactional(rollbackFor = Exception.class)
+public void importData() throws IOException {
+    // ✅ 任何 Exception 都会回滚
+}
+
+// 方案二：将受检异常包装为 RuntimeException
+@Transactional
+public void importData() {
+    try {
+        // ...
+    } catch (IOException e) {
+        throw new RuntimeException("导入失败", e);  // ✅ 触发回滚
+    }
+}
+```
+
+### 失效场景速查
+
+| 场景 | 原因 | 解决方案 |
+|------|------|---------|
+| 同类方法调用 | 绕过了 AOP 代理 | 注入自身 / 抽离 Service |
+| 方法非 public | CGLIB 代理无法拦截 | 改为 public |
+| 异常被捕获 | 代理感知不到异常 | 手动回滚或重新抛出 |
+| 数据库引擎不支持 | MyISAM 不支持事务 | 使用 InnoDB |
+| 多线程环境 | 事务绑定在线程上 | 使用分布式事务或手动管理 |
+| 默认回滚策略 | 受检异常不回滚 | 指定 `rollbackFor` |
+
 ## 六、手动事务管理
 
 ```java

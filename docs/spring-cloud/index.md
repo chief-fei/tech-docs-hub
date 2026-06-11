@@ -35,7 +35,7 @@ Spring Cloud 是构建微服务分布式系统的常用工具集。
 
 | Spring Cloud | Spring Boot | Spring Cloud Alibaba |
 |-------------|------------|---------------------|
-| 2021.0.x | 2.7.x | 2021.0.5.0 |
+| 2021.0.x | 2.7.x | 2021.0.6.0 |
 | 2022.0.x | 3.0.x | 2022.0.x |
 | 2023.0.x | 3.2.x | 2023.0.x |
 | 2024.0.x | 3.4.x | 2024.0.x |
@@ -57,7 +57,7 @@ Spring Cloud 是构建微服务分布式系统的常用工具集。
         <dependency>
             <groupId>com.alibaba.cloud</groupId>
             <artifactId>spring-cloud-alibaba-dependencies</artifactId>
-            <version>2021.0.5.0</version>
+            <version>2021.0.6.0</version>
             <type>pom</type>
             <scope>import</scope>
         </dependency>

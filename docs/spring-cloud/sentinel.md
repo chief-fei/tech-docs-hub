@@ -2,7 +2,7 @@
 
 Sentinel 是阿里巴巴开源的流量治理组件，以流量为切入点，提供**流量控制、熔断降级、系统负载保护**等多种维度来保障微服务的稳定性。
 
-> 适用版本：Sentinel 1.8.6 + Spring Cloud Alibaba 2021.0.5.0（Spring Boot 2.7.x）
+> 适用版本：Sentinel 1.8.6 + Spring Cloud Alibaba 2021.0.6.0（Spring Boot 2.7.x）
 
 ## 一、核心概念
 
@@ -78,7 +78,7 @@ try (Entry entry = SphU.entry("getUserById")) {
 ```
 
 ::: tip 版本说明
-`spring-cloud-starter-alibaba-sentinel` 的版本由 `spring-cloud-alibaba-dependencies`（2021.0.5.0）统一管理，无需手动指定。
+`spring-cloud-starter-alibaba-sentinel` 的版本由 `spring-cloud-alibaba-dependencies`（2021.0.6.0）统一管理，无需手动指定。
 :::
 
 ### 2.2 bootstrap.yml 配置
@@ -1013,15 +1013,188 @@ spring:
 
 `grade` 取值：`0`（慢调用比例）、`1`（异常比例）、`2`（异常数）。
 
-### 10.6 改造控制台实现双向同步
+### 10.6 改造 Dashboard 实现双向同步
 
-::: danger 注意
-默认的 Sentinel Dashboard 是**单向推送**（写规则到应用内存），不会自动写入 Nacos。要实现"控制台写规则 → Nacos 持久化 → 应用同步"，需要**改造 Sentinel Dashboard 源码**，将规则写入逻辑改为写入 Nacos。
-
-这是 Sentinel 当前版本的已知限制。具体改造方案参考 Sentinel 官方 Wiki：[Sentinel Dashboard 改造](https://github.com/alibaba/Sentinel/wiki/Sentinel-控制台（集群流控管理）#规则配置)。
+::: danger 默认限制
+Sentinel Dashboard 默认将规则写入应用**内存**，不会自动写入 Nacos。要实现"控制台写规则 → Nacos 持久化 → 所有应用实例同步"，需要改造 Dashboard 源码。
 :::
 
-**简化方案：** 在开发/测试环境，直接在 Nacos 控制台手动编辑规则 JSON，应用端通过 Nacos 数据源自动同步。生产环境建议改造 Dashboard。
+#### 改造原理
+
+```text
+改造前：Dashboard ──写入──▶ 应用内存（单实例，重启丢失）
+
+改造后：Dashboard ──写入──▶ Nacos Config ──监听──▶ 所有应用实例同步
+```
+
+#### 步骤一：下载并导入 Dashboard 源码
+
+```bash
+# 下载 Sentinel 1.8.6 源码
+git clone https://github.com/alibaba/Sentinel.git
+cd Sentinel
+git checkout v1.8.6
+
+# 将 sentinel-dashboard 模块导入 IDE
+```
+
+#### 步骤二：添加 Nacos 依赖
+
+在 `sentinel-dashboard/pom.xml` 中添加：
+
+```xml
+<dependency>
+    <groupId>com.alibaba.nacos</groupId>
+    <artifactId>nacos-client</artifactId>
+    <version>2.2.4</version>
+</dependency>
+```
+
+#### 步骤三：创建 Nacos 配置推送工具类
+
+```java
+// sentinel-dashboard/src/main/java/com/alibaba/csp/sentinel/dashboard/rule/nacos/NacosConfigUtil.java
+public final class NacosConfigUtil {
+
+    public static final String GROUP_ID = "DEFAULT_GROUP";
+
+    // 以下四个 Data ID 后缀与 bootstrap.yml 中配置的 rule-type 对应
+    public static final String FLOW_DATA_ID_POSTFIX = "-flow-rules";
+    public static final String DEGRADE_DATA_ID_POSTFIX = "-degrade-rules";
+    public static final String SYSTEM_DATA_ID_POSTFIX = "-system-rules";
+    public static final String PARAM_FLOW_DATA_ID_POSTFIX = "-param-flow-rules";
+    public static final String AUTHORITY_DATA_ID_POSTFIX = "-authority-rules";
+
+    private NacosConfigUtil() {}
+}
+```
+
+#### 步骤四：实现流控规则的 Nacos 读写
+
+```java
+// FlowRuleNacosProvider.java —— 从 Nacos 读取规则
+@Component("flowRuleNacosProvider")
+public class FlowRuleNacosProvider implements DynamicRuleProvider<List<FlowRuleEntity>> {
+
+    @Autowired
+    private ConfigService configService;
+
+    @Override
+    public List<FlowRuleEntity> getRules(String appName) throws Exception {
+        String dataId = appName + NacosConfigUtil.FLOW_DATA_ID_POSTFIX;
+        String rules = configService.getConfig(dataId, NacosConfigUtil.GROUP_ID, 3000);
+        if (StringUtil.isEmpty(rules)) {
+            return new ArrayList<>();
+        }
+        return JSON.parseArray(rules, FlowRuleEntity.class);
+    }
+}
+```
+
+```java
+// FlowRuleNacosPublisher.java —— 将规则写入 Nacos
+@Component("flowRuleNacosPublisher")
+public class FlowRuleNacosPublisher implements DynamicRulePublisher<List<FlowRuleEntity>> {
+
+    @Autowired
+    private ConfigService configService;
+
+    @Override
+    public void publish(String appName, List<FlowRuleEntity> rules) throws Exception {
+        String dataId = appName + NacosConfigUtil.FLOW_DATA_ID_POSTFIX;
+        configService.publishConfig(dataId, NacosConfigUtil.GROUP_ID,
+                JSON.toJSONString(rules));
+    }
+}
+```
+
+#### 步骤五：替换默认 Controller 的规则读写逻辑
+
+修改 `FlowControllerV2`（或创建新的 Controller），将原来写入内存的代码替换为调用 Nacos Provider/Publisher：
+
+```java
+@RestController
+@RequestMapping("/v2/flow")
+public class FlowControllerV2 {
+
+    @Autowired
+    @Qualifier("flowRuleNacosProvider")
+    private DynamicRuleProvider<List<FlowRuleEntity>> ruleProvider;
+
+    @Autowired
+    @Qualifier("flowRuleNacosPublisher")
+    private DynamicRulePublisher<List<FlowRuleEntity>> rulePublisher;
+
+    @GetMapping("/rules")
+    public Result<List<FlowRuleEntity>> apiQueryRules(@RequestParam String app) {
+        try {
+            List<FlowRuleEntity> rules = ruleProvider.getRules(app);
+            return Result.ofSuccess(rules);
+        } catch (Exception e) {
+            return Result.ofThrowable(-1, e);
+        }
+    }
+
+    @PostMapping("/rule")
+    public Result<FlowRuleEntity> apiAddRule(@RequestBody FlowRuleEntity entity) {
+        // ... 校验、添加到列表 ...
+        try {
+            rulePublisher.publish(entity.getApp(), rules);
+            return Result.ofSuccess(entity);
+        } catch (Exception e) {
+            return Result.ofThrowable(-1, e);
+        }
+    }
+}
+```
+
+#### 步骤六：Nacos 配置注入
+
+在 `application.properties` 中配置 Nacos 地址：
+
+```properties
+# sentinel-dashboard/src/main/resources/application.properties
+nacos.server-addr=127.0.0.1:8848
+nacos.namespace=
+```
+
+创建 ConfigService Bean：
+
+```java
+@Configuration
+public class NacosConfig {
+
+    @Value("${nacos.server-addr}")
+    private String serverAddr;
+
+    @Value("${nacos.namespace:}")
+    private String namespace;
+
+    @Bean
+    public ConfigService configService() throws Exception {
+        Properties properties = new Properties();
+        properties.put("serverAddr", serverAddr);
+        if (StringUtils.isNotBlank(namespace)) {
+            properties.put("namespace", namespace);
+        }
+        return ConfigFactory.createConfigService(properties);
+    }
+}
+```
+
+::: tip 降级/系统/热点/授权规则同理
+以上示例以流控规则为例，其他规则类型（降级、系统、热点、授权）的改造方式完全相同，只需要替换对应的 Data ID 后缀和实体类即可。
+:::
+
+#### 简化方案（无需改造源码）
+
+如果不想改造 Dashboard，可以采用以下简化方案：
+
+1. **在 Nacos 控制台手动编辑规则**：直接在 Nacos 中创建 JSON 格式的规则配置
+2. **应用端通过 datasource 配置监听 Nacos**：使用 10.2 节的配置方式
+3. **Dashboard 仅用于监控**：使用 Dashboard 查看实时监控数据，不通过 Dashboard 管理规则
+
+> 简化方案适用于开发/测试环境。生产环境建议改造 Dashboard 实现完整的规则管理闭环。
 
 ---
 

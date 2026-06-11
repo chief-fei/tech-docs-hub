@@ -50,7 +50,7 @@ Spring Boot 的 `@SpringBootApplication` 是一个组合注解：
 ```
 
 - **@EnableAutoConfiguration**：通过 `spring.factories` 加载各 Starter 的自动配置类
-- **自动配置入口**：`META-INF/spring.factories` → `XXXAutoConfiguration`
+- **自动配置入口**：`META-INF/spring.factories` → `XXXAutoConfiguration`（2.7.x 同时支持 `META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports`）
 - **条件注解**：`@ConditionalOnClass`、`@ConditionalOnMissingBean`、`@ConditionalOnProperty` 等按需启用
 
 ## 版本注意事项
@@ -58,3 +58,5 @@ Spring Boot 的 `@SpringBootApplication` 是一个组合注解：
 - Spring Boot 2.7.x 中 `javax.*` 仍为标准包名（3.x 迁移为 `jakarta.*`）
 - 事务代理默认使用 CGLIB（`spring.aop.proxy-target-class=true` 默认匹配）
 - Spring Boot 2.7.18 为 2.x 系列最终版，建议使用此版本
+- **自动配置注册机制**：Spring Boot 2.7.x 同时支持 `META-INF/spring.factories` 和新的 `META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports` 两种方式，方便向 3.x 迁移
+- 2.7.x 是 3.x 迁移的准备版本，建议逐步将 `spring.factories` 中的自动配置类迁移到新的 imports 文件格式

@@ -618,6 +618,13 @@ public class UserController {
 | 级联校验 | ✅ | ✅ |
 | Controller 层推荐 | ✅ | ✅（需要分组时） |
 
+::: tip 使用建议
+- **@RequestBody 校验**：使用 `@Valid` 或 `@Validated` 均可，两者都支持级联校验
+- **@RequestParam / @PathVariable 校验**：必须在 Controller 类上加 `@Validated`，然后在方法参数上使用校验注解
+- **分组校验**：必须使用 `@Validated`，`@Valid` 不支持分组
+- **Service 层方法校验**：在 Service 类上加 `@Validated`，然后在方法参数上使用校验注解
+:::
+
 ---
 
 ## 四、Controller 中的校验与异常处理
