@@ -36,6 +36,8 @@ Spring Boot 2.7.x 是 Spring Boot 2.x 系列的最终生产版（最终版本 2.
 | [AOP 切面编程](./aop) | @Aspect、@Before、@After、@Around |
 | [Bean 管理与注入](./bean) | @Bean、@Component、@Autowired 注入方式 |
 | [配置类与属性绑定](./config) | @Configuration、@ConfigurationProperties、@Value |
+| [javax.validation 校验](./validation) | 参数校验注解、@Validated、@Valid 使用 |
+| [自定义 Starter](./custom-starter) | 完整创建流程、自动配置、条件注解、实战示例 |
 | [注解速查手册](./annotations) | 业务常用注解速查，含参数解析 |
 
 ## 自动配置原理
@@ -52,6 +54,7 @@ Spring Boot 的 `@SpringBootApplication` 是一个组合注解：
 - **@EnableAutoConfiguration**：通过 `spring.factories` 加载各 Starter 的自动配置类
 - **自动配置入口**：`META-INF/spring.factories` → `XXXAutoConfiguration`（2.7.x 同时支持 `META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports`）
 - **条件注解**：`@ConditionalOnClass`、`@ConditionalOnMissingBean`、`@ConditionalOnProperty` 等按需启用
+- **自定义 Starter**：遵循以上自动配置规则，可将任意功能封装为 Starter，详见 [自定义 Starter](./custom-starter)
 
 ## 版本注意事项
 
