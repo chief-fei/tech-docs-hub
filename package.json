@@ -1,8 +1,8 @@
 {
   "private": true,
-  "name": "vitepress-theme-teek-docs-template",
+  "name": "ufhub-docs",
   "version": "1.0.0",
-  "description": "vitepress-theme-teek 文档模板",
+  "description": "UFHub Documentation",
   "type": "module",
   "scripts": {
     "docs:dev": "vitepress dev docs",
