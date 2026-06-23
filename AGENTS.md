@@ -49,7 +49,7 @@ All content lives under `docs/` as Markdown files, organized by technology:
 | `docs/es/` | Elasticsearch CRUD + Spring Boot integration |
 | `docs/docker/` | Docker images, containers, Dockerfile, Compose |
 | `docs/dev-tools/` | Maven, MapStruct, EasyExcel, XXL-Job, Druid, Sa-Token, Jasypt, OSS |
-| `docs/utils/` | Hutool, Netty |
+| `docs/dev-tools/` | Hutool, Netty |
 
 ### Deployment
 
