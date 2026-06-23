@@ -5,6 +5,7 @@ export const teekConfig = defineTeekConfig({
   teekHome: false,
   vpHome: true,
   sidebarTrigger: true,
+  loading: '酋长正在加载中...',
   author: { name: "chief-fei", link: "https://github.com/chief-fei" },
 
   // 深浅色模式切换过渡动画
