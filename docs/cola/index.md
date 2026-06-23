@@ -135,12 +135,6 @@ public Response execute(CustomerAddCmd cmd) {
 
 ---
 
-### 3. 通用开发专题
-
-| 专题 | 文件 | 主要内容 | 何时使用 |
-|------|------|--------|---------|
-| `Lombok 注解` | [./lombok.md](././lombok.md) | Stable + Experimental 注解作用、场景、注意事项 | 需要快速选型 Lombok 注解、代码评审校对 |
-
 ## 🎯 快速选择指南
 
 ### 根据场景选择组件
@@ -260,25 +254,6 @@ public Response execute(CustomerAddCmd cmd) {
 | 如何实现业务规则？ | [./components/domain.md](././components/domain.md) |
 | 如何支持不同的业务模式？ | [./components/extension.md](././components/extension.md) |
 | 如何防止并发冲突？ | [./components/lock.md](././components/lock.md) |
-| Lombok 注解怎么选？ | [./lombok.md](././lombok.md) |
-
----
-
-## 📋 组件依赖关系
-
-```
-cola-component-dto
-    ↓ (基础，被所有组件使用)
-
-cola-component-exception
-cola-component-domain-starter
-cola-component-catchlog-starter
-    ↓ (核心组件，几乎总是需要)
-
-cola-component-extension (可选)
-cola-component-lock-starter (可选)
-    ↑ (高级功能)
-```
 
 ---
 
@@ -373,38 +348,3 @@ cola-component-lock-starter (可选)
 | CQRS (命令查询职责分离) | https://martinfowler.com/bliki/CQRS.html |
 | 微服务架构 | https://martinfowler.com/microservices/ |
 | 日志最佳实践 | 《Java Logging Best Practices》 |
-
----
-
-## 📝 文档维护
-
-本索引文档基于 COLA 5.0.0 版本，定期更新。
-
-### 已完成
-- ✅ ./components/index.md
-- ✅ ./components/dto.md  
-- ✅ ./components/exception.md
-- ✅ ./components/catchlog.md
-- ✅ ./components/domain.md
-- ✅ ./components/extension.md
-- ✅ ./components/lock.md
-
-### 计划中（待补充）
-- 无（所有核心组件已完成）
-
-### 可选参考文档
-- ⏳ COLA 最佳实践指南
-- ⏳ 微服务架构迁移指南
-
-### 反馈和改进
-
-如果发现文档中有：
-- 错误或不准确的信息
-- 缺失的重要内容
-- 可以更清楚的解释
-
-欢迎提出改进建议！
-
----
-
-**最后更新**：2025 年 6 月
