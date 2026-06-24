@@ -29,6 +29,7 @@ Spring Boot 2.7.x 是 Spring Boot 2.x 系列的最终生产版（最终版本 2.
 | 主题 | 说明 |
 |------|------|
 | [Controller & 请求处理](./controller) | @RestController、@RequestMapping、参数绑定 |
+| [自定义参数解析器](./argument-resolver) | HandlerMethodArgumentResolver、@LoginUser 注入登录用户 |
 | [Filter 过滤器](./filter) | 实现 Filter、OncePerRequestFilter、注册方式 |
 | [Interceptor 拦截器](./interceptor) | HandlerInterceptor、路径匹配、执行顺序 |
 | [全局异常处理](./exception) | @ControllerAdvice、@ExceptionHandler、统一响应 |

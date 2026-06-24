@@ -73,6 +73,7 @@ export default defineConfig({
 				items: [
 					{ text: '概述', link: '/spring-boot/' },
 					{ text: 'Controller', link: '/spring-boot/controller' },
+					{ text: '自定义参数解析器', link: '/spring-boot/argument-resolver' },
 					{ text: 'Filter', link: '/spring-boot/filter' },
 					{ text: 'Interceptor', link: '/spring-boot/interceptor' },
 					{ text: 'Exception', link: '/spring-boot/exception' },
@@ -204,6 +205,7 @@ export default defineConfig({
 					items: [
 						{ text: '概述', link: '/spring-boot/' },
 						{ text: 'Controller', link: '/spring-boot/controller' },
+						{ text: '自定义参数解析器', link: '/spring-boot/argument-resolver' },
 						{ text: 'Filter', link: '/spring-boot/filter' },
 						{ text: 'Interceptor', link: '/spring-boot/interceptor' },
 						{ text: 'Exception', link: '/spring-boot/exception' },
