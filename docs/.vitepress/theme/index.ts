@@ -17,7 +17,6 @@ import "vitepress-theme-teek/theme-chalk/tk-home-card-hover.css"; // 首页卡�
 import "vitepress-theme-teek/theme-chalk/tk-fade-up-animation.css"; // 首次加载的动画效果
 
 import "./styles/code-bg.scss";
-import "./styles/font.scss";
 import "./styles/iframe.scss";
 import "./styles/mermaid.scss";
 
