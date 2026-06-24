@@ -175,7 +175,7 @@ export default defineConfig({
 					text: 'Docker',
 					collapsed: false,
 					items: [
-						{ text: '概述', link: '/docker/' },
+						{ text: '概述', link: '/docker/index' },
 						{ text: '镜像管理命令', link: '/docker/image' },
 						{ text: '容器管理命令', link: '/docker/container' },
 						{ text: 'Dockerfile 编写', link: '/docker/dockerfile' },
