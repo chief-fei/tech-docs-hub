@@ -125,10 +125,7 @@ export default defineConfig({
 					text: 'COLA',
 					collapsed: false,
 					items: [
-						{ text: '概述', link: '/cola/' },
 						{ text: '快速开始', link: '/cola/quickstart' },
-						{ text: '架构详解', link: '/cola/architecture' },
-						{ text: '命名规范', link: '/cola/naming-conventions' },
 					],
 				},
 				{

@@ -9,9 +9,6 @@ hero:
     - theme: brand
       text: 开始阅读
       link: /cola/quickstart
-    - theme: alt
-      text: COLA 架构
-      link: /cola/
 
 features:
   - icon: 🏗️
